@@ -4,7 +4,7 @@
 @section('meta_description', $page->meta_description)
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/single.css') }}">
+    <link rel="stylesheet" href="{{ \App\Support\Asset::versioned('css/single.css') }}">
 @endpush
 
 @section('content')
