@@ -1,4 +1,7 @@
-@php $siteSettings = \App\Models\Setting::all_cached(); @endphp
+@php
+    $siteSettings = \App\Models\Setting::all_cached();
+    $indexable    = config('site.indexable');
+@endphp
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -7,6 +10,12 @@
 
     <title>@yield('title', $siteSettings['site_name'] ?? 'amarDesh24.news')</title>
     <meta name="description" content="@yield('meta_description', $siteSettings['meta_description'] ?? '')">
+
+    @unless ($indexable)
+        {{-- Staging copy: kept out of search results so it cannot compete
+             with the live domain for the same headlines. --}}
+        <meta name="robots" content="noindex, nofollow">
+    @endunless
 
     <meta property="og:site_name" content="{{ $siteSettings['site_name'] ?? 'amarDesh24.news' }}">
     <meta property="og:title" content="@yield('title', $siteSettings['site_name'] ?? 'amarDesh24.news')">
@@ -39,10 +48,10 @@
 
     @include('partials.schema')
 
-    {{-- Analytics runs only on the live site, so local testing does not
-         pollute the numbers you make decisions from. --}}
+    {{-- Analytics follows the same switch as indexing, so traffic from the
+         staging copy never lands in the numbers you make decisions from. --}}
     @php $ga = $siteSettings['google_analytics'] ?? null; @endphp
-    @if ($ga && app()->environment('production'))
+    @if ($ga && $indexable)
         <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga }}"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -55,6 +64,12 @@
     @stack('head')
 </head>
 <body>
+
+@unless ($indexable)
+    <div style="background:#fab219;color:#1c1d20;text-align:center;padding:7px 14px;font-size:13px;font-weight:700">
+        প্রিভিউ সংস্করণ — এটি পরীক্ষামূলক সাইট, মূল সাইট নয়।
+    </div>
+@endunless
 
 @include('partials.header')
 @include('partials.ticker')

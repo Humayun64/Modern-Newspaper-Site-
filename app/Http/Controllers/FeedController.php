@@ -133,6 +133,13 @@ class FeedController extends Controller
 
     public function robots()
     {
+        // Driven by APP_INDEXABLE, not APP_ENV: a staging copy runs in
+        // production mode but must stay out of Google entirely.
+        if (! config('site.indexable')) {
+            return response("User-agent: *\nDisallow: /")
+                ->header('Content-Type', 'text/plain; charset=UTF-8');
+        }
+
         $lines = [
             'User-agent: *',
             'Disallow: /admin',
@@ -141,11 +148,6 @@ class FeedController extends Controller
             '',
             'Sitemap: ' . route('sitemap.index'),
         ];
-
-        // Keep a staging or local copy out of the index entirely.
-        if (! app()->environment('production')) {
-            $lines = ['User-agent: *', 'Disallow: /'];
-        }
 
         return response(implode("\n", $lines))
             ->header('Content-Type', 'text/plain; charset=UTF-8');
