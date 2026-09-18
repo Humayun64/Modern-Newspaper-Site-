@@ -20,7 +20,13 @@
             <span>{{ now()->format('F j, Y') }}</span>
             <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
         </span>
-        @include('partials.social-row')
+
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            {{-- Language switcher. Google renders the select itself; the
+                 empty div is only the mount point. --}}
+            <div class="translate-box"><div id="google_translate_element"></div></div>
+            @include('partials.social-row')
+        </div>
     </div>
 </div>
 
@@ -70,3 +76,19 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'bn',
+            // A short list on purpose: the full list is 130 languages and
+            // becomes an unusable scroll on a phone.
+            includedLanguages: 'bn,en,hi,ar,ur',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+        }, 'google_translate_element');
+    }
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
+@endpush
