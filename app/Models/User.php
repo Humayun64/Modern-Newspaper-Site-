@@ -3,11 +3,21 @@
 namespace App\Models;
 
 use App\Support\BanglaSlug;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+/**
+ * Implements FilamentUser deliberately.
+ *
+ * Without this contract Filament only lets people into the panel when
+ * APP_ENV is local — in production it refuses with a 403, by design, so a
+ * deployed app cannot accidentally admit every registered user. Locally it
+ * worked; on the server it did not. This is the method that decides.
+ */
+class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
 
@@ -34,6 +44,13 @@ class User extends Authenticatable
                 $user->slug = BanglaSlug::unique($user->name, static::class, $user);
             }
         });
+    }
+
+    /** Who may open the admin panel at all. Roles decide what they see inside. */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return (bool) $this->is_active
+            && in_array($this->role, ['admin', 'editor', 'author'], true);
     }
 
     public function posts()

@@ -20,13 +20,7 @@
             <span>{{ now()->format('F j, Y') }}</span>
             <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
         </span>
-
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            {{-- Language switcher. Google renders the select itself; the
-                 empty div is only the mount point. --}}
-            <div class="translate-box"><div id="google_translate_element"></div></div>
-            @include('partials.social-row')
-        </div>
+        @include('partials.social-row')
     </div>
 </div>
 
@@ -58,7 +52,22 @@
         </ul>
 
         <div class="nav-actions">
+            {{-- Our own select, styled to the bar. Google's widget is mounted
+                 hidden below and driven from here — its default gadget is an
+                 unstyled white box that cannot be made to match anything. --}}
+            <label class="lang-switch">
+                <span class="lang-globe" aria-hidden="true">&#127760;</span>
+                <select id="lang-select" aria-label="ভাষা নির্বাচন করুন">
+                    <option value="bn">বাংলা</option>
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ar">العربية</option>
+                    <option value="ur">اردو</option>
+                </select>
+            </label>
+
             <button class="nav-search" type="button" data-search-toggle aria-label="Search">&#9906;</button>
+
             @if (($settings['nav_cta_text'] ?? 'Watch Videos') !== '')
                 <a class="nav-cta" href="{{ ($settings['nav_cta_url'] ?? '') ?: route('home') }}">
                     {{ $settings['nav_cta_text'] ?? 'Watch Videos' }}
@@ -77,18 +86,71 @@
     </div>
 </div>
 
+{{-- Mount point for Google's widget. Kept off-screen rather than display:none,
+     because Google will not build the control inside a hidden element. --}}
+<div id="google_translate_element" class="gt-hidden" aria-hidden="true"></div>
+
 @push('scripts')
 <script>
-    function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-            pageLanguage: 'bn',
-            // A short list on purpose: the full list is 130 languages and
-            // becomes an unusable scroll on a phone.
-            includedLanguages: 'bn,en,hi,ar,ur',
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-        }, 'google_translate_element');
+(function () {
+    var select = document.getElementById('lang-select');
+    if (!select) return;
+
+    // Reflect whatever language the visitor is already reading in.
+    var current = (document.cookie.match(/(?:^|;\s*)googtrans=\/[^\/]*\/([^;]+)/) || [])[1];
+    if (current) {
+        select.value = current;
     }
+
+    function applyLanguage(lang) {
+        // Returning to Bangla means removing the translation, not translating
+        // into it. Clearing the cookie and reloading is the only reliable way.
+        if (lang === 'bn') {
+            var host = location.hostname;
+            ['/', ''].forEach(function (path) {
+                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=' + (path || '/');
+                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + host;
+                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.' + host;
+            });
+            location.reload();
+            return;
+        }
+
+        var combo = document.querySelector('.goog-te-combo');
+
+        // The script loads asynchronously, so a click straight after page load
+        // can arrive before the control exists. Wait briefly rather than fail.
+        if (!combo) {
+            var tries = 0;
+            var timer = setInterval(function () {
+                combo = document.querySelector('.goog-te-combo');
+                if (combo) {
+                    clearInterval(timer);
+                    combo.value = lang;
+                    combo.dispatchEvent(new Event('change'));
+                } else if (++tries > 30) {
+                    clearInterval(timer);
+                }
+            }, 150);
+            return;
+        }
+
+        combo.value = lang;
+        combo.dispatchEvent(new Event('change'));
+    }
+
+    select.addEventListener('change', function () {
+        applyLanguage(this.value);
+    });
+})();
+
+function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'bn',
+        includedLanguages: 'bn,en,hi,ar,ur',
+        autoDisplay: false
+    }, 'google_translate_element');
+}
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" defer></script>
 @endpush
