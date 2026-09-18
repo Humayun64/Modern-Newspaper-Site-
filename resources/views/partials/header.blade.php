@@ -53,7 +53,7 @@
 
         <div class="nav-actions">
             {{-- Our own select, styled to the bar. Google's widget is mounted
-                 hidden below and driven from here — its default gadget is an
+                 off-screen and driven from here — its own gadget is an
                  unstyled white box that cannot be made to match anything. --}}
             <label class="lang-switch">
                 <span class="lang-globe" aria-hidden="true">&#127760;</span>
@@ -87,60 +87,98 @@
 </div>
 
 {{-- Mount point for Google's widget. Kept off-screen rather than display:none,
-     because Google will not build the control inside a hidden element. --}}
+     because Google will not build its control inside a hidden element. --}}
 <div id="google_translate_element" class="gt-hidden" aria-hidden="true"></div>
 
 @push('scripts')
 <script>
 (function () {
+    var SOURCE = 'bn';
     var select = document.getElementById('lang-select');
     if (!select) return;
 
-    // Reflect whatever language the visitor is already reading in.
-    var current = (document.cookie.match(/(?:^|;\s*)googtrans=\/[^\/]*\/([^;]+)/) || [])[1];
-    if (current) {
-        select.value = current;
+    /*
+     * Google records the chosen language in TWO places, and both have to go
+     * before the page will show the original again:
+     *
+     *   1. a googtrans cookie — set on a parent domain, not the host, so on
+     *      new.amardesh24.news it lands on .amardesh24.news
+     *   2. a #googtrans(bn|en) fragment appended to the URL, which Google
+     *      re-reads on load and which overrides everything else
+     *
+     * Clearing only the cookie, on only the host, is why switching back to
+     * Bangla kept snapping to English.
+     */
+    function currentLanguage() {
+        var hash = location.hash.match(/#googtrans\(([^|)]+)\|([^)]+)\)/);
+        if (hash) {
+            return hash[2];
+        }
+
+        var cookie = document.cookie.match(/(?:^|;\s*)googtrans=\/[^\/]*\/([^;]+)/);
+        return cookie ? decodeURIComponent(cookie[1]) : SOURCE;
     }
 
-    function applyLanguage(lang) {
-        // Returning to Bangla means removing the translation, not translating
-        // into it. Clearing the cookie and reloading is the only reliable way.
-        if (lang === 'bn') {
-            var host = location.hostname;
-            ['/', ''].forEach(function (path) {
-                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=' + (path || '/');
-                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' + host;
-                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.' + host;
+    function clearGoogleCookie() {
+        var host  = location.hostname;
+        var parts = host.split('.');
+        var domains = ['', host];
+
+        // .new.amardesh24.news, .amardesh24.news, .news — Google may have
+        // used any of them, and a cookie only clears on the domain that set it.
+        for (var i = 0; i < parts.length - 1; i++) {
+            domains.push('.' + parts.slice(i).join('.'));
+        }
+
+        var paths = ['/', location.pathname];
+
+        domains.forEach(function (domain) {
+            paths.forEach(function (path) {
+                document.cookie = 'googtrans=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=' + path
+                    + (domain ? ';domain=' + domain : '');
             });
-            location.reload();
-            return;
-        }
-
-        var combo = document.querySelector('.goog-te-combo');
-
-        // The script loads asynchronously, so a click straight after page load
-        // can arrive before the control exists. Wait briefly rather than fail.
-        if (!combo) {
-            var tries = 0;
-            var timer = setInterval(function () {
-                combo = document.querySelector('.goog-te-combo');
-                if (combo) {
-                    clearInterval(timer);
-                    combo.value = lang;
-                    combo.dispatchEvent(new Event('change'));
-                } else if (++tries > 30) {
-                    clearInterval(timer);
-                }
-            }, 150);
-            return;
-        }
-
-        combo.value = lang;
-        combo.dispatchEvent(new Event('change'));
+        });
     }
+
+    function restoreOriginal() {
+        clearGoogleCookie();
+
+        // Reload WITHOUT the fragment. A plain location.reload() keeps it,
+        // and Google would translate straight back.
+        location.replace(location.pathname + location.search);
+    }
+
+    function translateTo(lang) {
+        var attempts = 0;
+
+        (function apply() {
+            var combo = document.querySelector('.goog-te-combo');
+
+            if (combo) {
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+                return;
+            }
+
+            // The widget script is deferred, so a click in the first moment
+            // after load can arrive before the control exists.
+            if (++attempts <= 40) {
+                setTimeout(apply, 150);
+            }
+        })();
+    }
+
+    select.value = currentLanguage();
 
     select.addEventListener('change', function () {
-        applyLanguage(this.value);
+        var lang = this.value;
+
+        if (lang === SOURCE) {
+            restoreOriginal();
+            return;
+        }
+
+        translateTo(lang);
     });
 })();
 
