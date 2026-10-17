@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\GlobalCoverageController;
 use App\Http\Controllers\Admin\MenuBuilderController;
 use App\Http\Controllers\Admin\RedirectController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -22,6 +23,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/users/{user}/toggle', [UserController::class, 'toggle'])->name('admin.users.toggle');
     Route::post('/admin/redirects', [RedirectController::class, 'store'])->name('admin.redirects.store');
     Route::delete('/admin/redirects/{redirect}', [RedirectController::class, 'destroy'])->name('admin.redirects.destroy');
+
+    // Global coverage — foreign-media highlights with a PDF (correction 20).
+    Route::post('/admin/coverage', [GlobalCoverageController::class, 'store'])->name('admin.coverage.store');
+    Route::post('/admin/coverage/{coverage}/toggle', [GlobalCoverageController::class, 'toggle'])->name('admin.coverage.toggle');
+    Route::delete('/admin/coverage/{coverage}', [GlobalCoverageController::class, 'destroy'])->name('admin.coverage.destroy');
 });
 
 // ---- feeds and sitemaps ---------------------------------------------------

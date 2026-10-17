@@ -20,6 +20,7 @@ class Post extends Model
     {
         return [
             'published_at'    => 'datetime',
+            'breaking_since'  => 'datetime',
             'is_breaking'     => 'boolean',
             'is_featured'     => 'boolean',
             'is_editors_pick' => 'boolean',
@@ -47,6 +48,22 @@ class Post extends Model
 
             if ($post->status === 'published' && blank($post->published_at)) {
                 $post->published_at = now();
+            }
+
+            /*
+             * Correction 13: a breaking headline lasts a day from the moment
+             * it is MARKED breaking, not from when it was published — an
+             * editor flagging a week-old story still gets a full day of it.
+             *
+             * The stamp is set the first time the flag goes on and cleared
+             * when it comes off, so re-flagging later starts a fresh day.
+             */
+            if ($post->is_breaking && blank($post->breaking_since)) {
+                $post->breaking_since = now();
+            }
+
+            if (! $post->is_breaking && filled($post->breaking_since)) {
+                $post->breaking_since = null;
             }
         });
 
@@ -142,7 +159,24 @@ class Post extends Model
 
     public function scopeBreaking(Builder $q): Builder
     {
-        return $q->published()->where('is_breaking', true)->latestFirst();
+        return $q->published()->where('is_breaking', true)->stillBreaking()->latestFirst();
+    }
+
+    /**
+     * Breaking for less than the allowed window.
+     *
+     * A row with no stamp is treated as current: it was flagged before this
+     * column existed, and dropping it silently would be worse than showing
+     * it until the scheduled command tidies it up.
+     */
+    public function scopeStillBreaking(Builder $q, ?int $hours = null): Builder
+    {
+        $hours ??= (int) (Setting::all_cached()['breaking_hours'] ?? 24) ?: 24;
+
+        return $q->where(function (Builder $sub) use ($hours) {
+            $sub->whereNull('breaking_since')
+                ->orWhere('breaking_since', '>=', now()->subHours($hours));
+        });
     }
 
     public function scopeFeatured(Builder $q): Builder

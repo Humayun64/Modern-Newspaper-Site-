@@ -54,7 +54,12 @@
             <span>{{ now()->format('F j, Y') }}</span>
             <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
         </span>
-        @include('partials.social-row')
+
+        {{-- Correction 15: weather and the stock index, top right. --}}
+        <div class="topbar-right">
+            @include('partials.topbar-widgets')
+            @include('partials.social-row')
+        </div>
     </div>
 </div>
 

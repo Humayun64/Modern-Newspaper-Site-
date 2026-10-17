@@ -46,6 +46,10 @@
 
     <link rel="stylesheet" href="{{ \App\Support\Asset::versioned('css/site.css') }}">
 
+    {{-- Corrections live here rather than being merged into site.css, so the
+         main stylesheet is not rewritten every time one lands. --}}
+    <link rel="stylesheet" href="{{ \App\Support\Asset::versioned('css/widgets.css') }}">
+
     @include('partials.schema')
 
     {{-- Analytics follows the same switch as indexing, so traffic from the
@@ -71,6 +75,7 @@
      compete with the live domain for the same headlines. --}}
 
 @include('partials.header')
+
 @include('partials.ticker')
 
 <main class="page">

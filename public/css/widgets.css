@@ -1,0 +1,300 @@
+/* ==========================================================================
+   amarDesh24.news — additions from the client's correction list
+   Loaded after site.css. Kept in its own file so the main stylesheet is not
+   rewritten every time a correction lands.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   TOP BAR — weather and stock index (correction 15)
+   -------------------------------------------------------------------------- */
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.topbar-widgets {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12.5px;
+    line-height: 1;
+}
+
+.tw {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    color: #c9ced6;
+}
+
+/* A hairline between the two readings, and again before the social row, so
+   the strip reads as three groups rather than one run-on line. */
+.tw + .tw {
+    padding-inline-start: 14px;
+    border-inline-start: 1px solid rgba(255, 255, 255, .14);
+}
+
+.tw strong { color: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tw-label  { opacity: .75; }
+.tw-icon   { font-size: 14px; line-height: 1; }
+
+/* Direction is carried by the arrow as well as the colour — on this dark
+   strip green and red alone are not enough to rely on. */
+.tw-change { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tw-change.is-up   { color: #0ca30c; }
+.tw-change.is-down { color: #e34948; }
+
+@media (max-width: 880px) {
+    .topbar-right   { gap: 10px; }
+    .topbar-widgets { gap: 10px; font-size: 12px; }
+    .tw + .tw       { padding-inline-start: 10px; }
+}
+
+@media (max-width: 620px) {
+    /* The strip is too tight for both on a phone: the temperature stays,
+       the index goes — a reader on a phone is not watching the market here. */
+    .tw-stock      { display: none; }
+    .tw-weather .tw-label { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   EDITORIAL CARD (correction 22)
+   -------------------------------------------------------------------------- */
+
+.author-card .author-role {
+    margin: -4px 0 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE: THREE ITEMS PER SECTION (correction 16)
+
+   The rest stay in the HTML and come back at tablet width, so this is a
+   display rule rather than a different page — the "আরও দেখুন" link in each
+   section heading is how a reader on a phone reaches the remainder.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+    .page .block .grid-2 > *:nth-child(n + 4),
+    .page .block .grid-3 > *:nth-child(n + 4),
+    .page .block .grid-4 > *:nth-child(n + 4) {
+        display: none;
+    }
+
+    .page .block .row-card:nth-of-type(n + 4),
+    .page .block .rank-card:nth-of-type(n + 4) {
+        display: none;
+    }
+
+    /* An archive page is the "see more" destination, so cutting it to three
+       would leave nowhere to go. Paginated lists keep every card. */
+    .page .block .pagination ~ *,
+    .page .block:has(.pagination) .grid-3 > *:nth-child(n + 4) {
+        display: revert;
+    }
+
+    /* The heading's link is the way out of a trimmed section, so it must not
+       be the first thing that disappears on a narrow screen. */
+    .block-more {
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--accent);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL COVERAGE (correction 20)
+   Foreign-media highlights. Each card opens a PDF, so it reads as a document
+   rather than an article: portrait thumbnail, outlet label, a PDF marker.
+   -------------------------------------------------------------------------- */
+
+.gc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap);
+}
+
+.gc-card {
+    display: grid;
+    grid-template-columns: 74px minmax(0, 1fr);
+    gap: 12px;
+    color: inherit;
+}
+
+.gc-card-cover {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background: var(--wash);
+    border: 1px solid var(--rule);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+.gc-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+.gc-card-initials {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    letter-spacing: .5px;
+}
+
+/* Says "this opens a file, not a page" before the reader clicks. */
+.gc-card-pdf {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    padding: 2px 5px;
+}
+
+.gc-card-body { min-width: 0; }
+
+.gc-card-outlet {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 3px;
+}
+
+.gc-card-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0;
+}
+a.gc-card:hover .gc-card-title { color: var(--accent); }
+
+.gc-card-summary {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 5px 0 0;
+}
+
+.gc-card-date {
+    display: block;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+}
+
+@media (max-width: 1040px) {
+    .gc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+    .gc-grid { grid-template-columns: 1fr; }
+
+    /* Correction 16 applies here too: three on a phone, no more. */
+    .gc-grid > *:nth-child(n + 4) { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   SIDEBAR: WEATHER (correction 15)
+   -------------------------------------------------------------------------- */
+
+.wx-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0 14px;
+}
+
+.wx-icon { font-size: 40px; line-height: 1; }
+
+.wx-now { display: grid; gap: 2px; }
+
+.wx-temp {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.wx-label { font-size: 13px; color: var(--ink-soft); }
+
+.wx-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+    margin: 0;
+    padding-top: 13px;
+    border-top: 1px solid var(--rule);
+}
+
+.wx-grid div { min-width: 0; }
+.wx-grid dt { font-size: 11.5px; color: var(--ink-soft); margin: 0; }
+.wx-grid dd {
+    margin: 2px 0 0;
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   SIDEBAR: STOCK INDEX (correction 15)
+   -------------------------------------------------------------------------- */
+
+.stock-figure {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 4px 0 2px;
+}
+
+.stock-name {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    color: var(--ink-soft);
+}
+
+.stock-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The arrow carries the direction as well as the colour — red and green
+   alone are not enough for everyone to read. */
+.stock-change {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.stock-change.is-up   { color: #006300; }
+.stock-change.is-down { color: #d03b3b; }
+
+.stock-note { font-size: 11.5px; color: var(--ink-soft); margin: 8px 0 0; }
+
+/* A pasted provider widget brings its own sizing; this stops it spilling
+   out of the sidebar on a narrow screen. */
+.stock-embed { overflow: hidden; }
+.stock-embed iframe,
+.stock-embed > div { max-width: 100% !important; }
+
+.stock-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--accent);
+}

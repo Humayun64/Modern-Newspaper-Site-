@@ -88,18 +88,28 @@ class RefreshHomepage extends Command
     {
         $this->line('Article flags…');
 
+        $offset = 0;
+
         foreach ($this->quota as $flag => $count) {
             $already = Post::published()->where($flag, true)->count();
 
             if ($already > 0 && ! $this->force) {
                 $this->line("  · {$flag}: {$already} already set — left alone");
+                $offset += $count;
                 continue;
             }
 
+            // Each flag takes a DIFFERENT slice of the newest articles.
+            // Taking the newest N for every flag put the same four headlines
+            // in the lead block, the editor's pick and the trending list at
+            // once, which is what the homepage looked like on the first run.
             $ids = Post::published()
                 ->latestFirst()
-                ->limit($count)
+                ->skip($offset)
+                ->take($count)
                 ->pluck('id');
+
+            $offset += $count;
 
             if ($ids->isEmpty()) {
                 continue;
@@ -112,9 +122,19 @@ class RefreshHomepage extends Command
 
             if ($this->force) {
                 Post::where($flag, true)->update([$flag => false]);
+
+                if ($flag === 'is_breaking') {
+                    Post::whereNotNull('breaking_since')->update(['breaking_since' => null]);
+                }
             }
 
             Post::whereIn('id', $ids)->update([$flag => true]);
+
+            // Breaking is time-limited, so it needs its clock started —
+            // a mass update does not run the model's saving hook.
+            if ($flag === 'is_breaking') {
+                Post::whereIn('id', $ids)->update(['breaking_since' => now()]);
+            }
 
             // Trending is an ordered list, not a set — without a position the
             // section falls back to whatever order MySQL feels like.
