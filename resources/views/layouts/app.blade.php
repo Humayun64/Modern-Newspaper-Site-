@@ -65,11 +65,10 @@
 </head>
 <body>
 
-@unless ($indexable)
-    <div style="background:#fab219;color:#1c1d20;text-align:center;padding:7px 14px;font-size:13px;font-weight:700">
-        প্রিভিউ সংস্করণ — এটি পরীক্ষামূলক সাইট, মূল সাইট নয়।
-    </div>
-@endunless
+{{-- The yellow "preview version" strip was removed at the client's request,
+     so they see the site as a reader would. The noindex tag in <head> is
+     NOT removed: this copy still has to stay out of Google, or it would
+     compete with the live domain for the same headlines. --}}
 
 @include('partials.header')
 @include('partials.ticker')

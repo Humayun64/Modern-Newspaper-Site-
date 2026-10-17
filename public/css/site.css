@@ -13,6 +13,13 @@
     --accent:    #d32b2b;
     --accent-dk: #a81f1f;
 
+    /* Bar colours, kept separate from --ink so Site settings → Appearance can
+       repaint the masthead and navigation without touching body text. The
+       header partial writes a :root override when those settings are filled;
+       these two lines are what an empty setting falls back to. */
+    --bar:       var(--ink);
+    --bar-2:     var(--ink-2);
+
     --serif: 'Noto Serif Bengali', Georgia, serif;
     --sans:  'Hind Siliguri', 'Segoe UI', system-ui, sans-serif;
 
@@ -43,7 +50,7 @@ a:hover { color: var(--accent); }
    MASTHEAD
    ========================================================================== */
 
-.topbar { background: var(--ink); color: #c9ced6; font-size: 13px; padding: 7px 0; }
+.topbar { background: var(--bar); color: #c9ced6; font-size: 13px; padding: 7px 0; }
 .topbar .wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .clock { display: inline-flex; gap: 18px; font-variant-numeric: tabular-nums; }
 
@@ -58,7 +65,7 @@ a:hover { color: var(--accent); }
 .social-row a.s-ig { background: #c13584; }
 .social-row a:hover { opacity: .82; color: #fff; }
 
-.masthead { background: var(--ink); color: #fff; padding: 28px 0; border-top: 1px solid #34363b; }
+.masthead { background: var(--bar); color: #fff; padding: 28px 0; border-top: 1px solid rgba(255,255,255,.08); }
 .masthead .wrap { display: flex; justify-content: space-between; align-items: center; gap: var(--gap); flex-wrap: wrap; }
 .brand { min-width: 0; }
 .brand-logo { max-height: 68px; width: auto; }
@@ -70,7 +77,7 @@ a:hover { color: var(--accent); }
    NAV
    ========================================================================== */
 
-.nav { background: var(--ink-2); position: sticky; top: 0; z-index: 50; }
+.nav { background: var(--bar-2); position: sticky; top: 0; z-index: 50; }
 .nav .wrap { display: flex; align-items: stretch; }
 
 .nav-links {
@@ -81,18 +88,39 @@ a:hover { color: var(--accent); }
     color: #fff; font-weight: 600; font-size: 14.5px;
     padding: 15px 13px; white-space: nowrap; border-bottom: 3px solid transparent;
 }
-.nav-links a:hover { color: #fff; background: #303136; }
+.nav-links a:hover { color: #fff; background: rgba(255,255,255,.08); }
 .nav-links a.is-active { color: #fff; border-bottom-color: var(--accent); }
 
 .nav-actions { display: flex; align-items: stretch; }
 .nav-search { display: grid; place-items: center; padding: 0 16px; color: #fff; background: none; border: 0; cursor: pointer; font-size: 16px; }
-.nav-search:hover { background: #303136; }
+.nav-search:hover { background: rgba(255,255,255,.08); }
 .nav-cta { display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 700; font-size: 13.5px; padding: 0 20px; white-space: nowrap; }
 .nav-cta:hover { background: var(--accent-dk); color: #fff; }
 
+/* "সাম্প্রতিক" — reads as a live feed rather than a second red button, so it
+   does not compete with the Latest Video call to action beside it. */
+.nav-latest {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 0 15px; color: #fff; font-weight: 600; font-size: 13.5px; white-space: nowrap;
+}
+.nav-latest:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav-latest-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(211,43,43,.7);
+    animation: latest-pulse 1.9s ease-out infinite;
+}
+@keyframes latest-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(211,43,43,.65); }
+    70%  { box-shadow: 0 0 0 7px rgba(211,43,43,0); }
+    100% { box-shadow: 0 0 0 0 rgba(211,43,43,0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nav-latest-dot { animation: none; }
+}
+
 .nav-toggle { display: none; background: none; border: 0; color: #fff; font-size: 20px; padding: 0 14px; cursor: pointer; }
 
-.search-bar { display: none; background: #303136; padding: 12px 0; }
+.search-bar { display: none; background: rgba(0,0,0,.25); padding: 12px 0; }
 .search-bar.is-open { display: block; }
 .search-bar form { display: flex; gap: 8px; }
 .search-bar input { flex: 1; padding: 10px 14px; border: 0; font-family: var(--sans); font-size: 15px; }
@@ -315,21 +343,21 @@ a:hover { color: var(--accent); }
    FOOTER
    ========================================================================== */
 
-.footer { background: var(--ink); color: #9aa1ab; margin-top: 40px; padding: 38px 0 0; }
-.footer h3 { color: #fff; font-size: 14.5px; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; border-bottom: 1px solid #34363b; position: relative; }
+.footer { background: var(--bar); color: #9aa1ab; margin-top: 40px; padding: 38px 0 0; }
+.footer h3 { color: #fff; font-size: 14.5px; font-weight: 700; margin: 0 0 16px; padding-bottom: 9px; border-bottom: 1px solid rgba(255,255,255,.12); position: relative; }
 .footer h3::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 58px; height: 3px; background: var(--accent); }
 .footer a { color: #9aa1ab; }
 .footer a:hover { color: #fff; }
 .footer-cols { display: grid; grid-template-columns: 1.5fr 1fr 1.4fr; gap: 36px; }
 .footer p { font-size: 13.5px; line-height: 1.8; }
 .footer-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 13.5px; }
-.footer-list li { padding-bottom: 10px; border-bottom: 1px solid #2c2e33; }
+.footer-list li { padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.08); }
 .footer-list li:last-child { border-bottom: 0; padding-bottom: 0; }
-.footer .chip { background: #2c2e33; border-color: #3a3c42; color: #c3c8cf; }
+.footer .chip { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); color: #c3c8cf; }
 .footer .chip:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 .footer-sub { margin-top: 24px; }
-.footer-nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13.5px; padding: 16px 0; border-top: 1px solid #34363b; margin-top: 30px; }
-.footer-bottom { margin-top: 0; padding: 15px 0; border-top: 1px solid #34363b; font-size: 13px; text-align: center; }
+.footer-nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13.5px; padding: 16px 0; border-top: 1px solid rgba(255,255,255,.12); margin-top: 30px; }
+.footer-bottom { margin-top: 0; padding: 15px 0; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px; text-align: center; }
 
 /* ==========================================================================
    PAGINATION
@@ -349,6 +377,7 @@ a:hover { color: var(--accent); }
     .body-row { grid-template-columns: minmax(0,1fr) 300px; }
     .grid-4 { grid-template-columns: repeat(2, minmax(0,1fr)); }
     .slide-title { font-size: 21px; }
+    .nav-latest { padding: 0 11px; }
 }
 
 @media (max-width: 880px) {
@@ -368,7 +397,7 @@ a:hover { color: var(--accent); }
         display: none;
         position: absolute; left: 0; right: 0; top: 100%;
         z-index: 70;
-        background: var(--ink-2);
+        background: var(--bar-2);
         flex-direction: column;
         margin: 0; padding: 4px 0;
         box-shadow: 0 16px 30px rgba(0,0,0,.4);
@@ -379,10 +408,10 @@ a:hover { color: var(--accent); }
     .nav-links a {
         display: block; width: 100%;
         padding: 13px 16px;
-        border-bottom: 1px solid #34363b;
+        border-bottom: 1px solid rgba(255,255,255,.1);
         border-left: 3px solid transparent;
     }
-    .nav-links a.is-active { border-bottom-color: #34363b; border-left-color: var(--accent); }
+    .nav-links a.is-active { border-bottom-color: rgba(255,255,255,.1); border-left-color: var(--accent); }
 }
 
 @media (max-width: 620px) {
@@ -401,6 +430,11 @@ a:hover { color: var(--accent); }
     .footer-cols { grid-template-columns: 1fr; gap: 26px; }
     .nav-cta { padding: 0 13px; font-size: 12px; }
     .ticker-item span { max-width: 62vw; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Four controls will not fit beside the burger. The word goes, the live
+       dot stays — it is the part that says "new things are here". */
+    .nav-latest { padding: 0 9px; font-size: 0; gap: 0; }
+    .nav-latest-dot { width: 9px; height: 9px; }
 }
 
 /* ==========================================================================
@@ -417,7 +451,7 @@ a:hover { color: var(--accent); }
 
 .nav-sub {
     position: absolute; top: 100%; inset-inline-start: 0;
-    min-width: 210px; background: var(--ink-2);
+    min-width: 210px; background: var(--bar-2);
     box-shadow: 0 12px 26px rgba(0,0,0,.28);
     display: none; z-index: 60; padding: 4px 0;
 }
@@ -442,40 +476,57 @@ a:hover { color: var(--accent); }
 
 /* ==========================================================================
    LANGUAGE SWITCHER
-   Our own select, sitting in the navigation bar. Google's own gadget is
-   mounted off-screen and driven from this control.
+   Our own dropdown, sitting in the navigation bar. Google's own gadget is
+   mounted off-screen and driven from this control — it is an unstyled white
+   box that cannot be made to match the bar.
    ========================================================================== */
 
-.lang-switch {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 0 12px;
-    border-inline-end: 1px solid rgba(255,255,255,.12);
-    color: #fff;
-    cursor: pointer;
-}
-.lang-globe { font-size: 14px; line-height: 1; opacity: .85; }
+.lang-switch { position: relative; display: flex; align-items: stretch; }
 
-.lang-switch select {
-    appearance: none; -webkit-appearance: none;
-    background: transparent;
-    border: 0;
-    color: #fff;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 600;
-    padding: 4px 18px 4px 0;
-    cursor: pointer;
-    /* Chevron drawn inline so no image request and it inherits the bar. */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%23ffffff' d='M0 0h10L5 6z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right center;
-    background-size: 8px;
+.lang-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 0 14px;
+    background: none; border: 0;
+    border-inline-start: 1px solid rgba(255,255,255,.14);
+    color: #fff; cursor: pointer;
+    font-family: var(--sans); font-size: 14px; font-weight: 600;
 }
-.lang-switch select:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.lang-btn:hover { background: rgba(255,255,255,.08); }
+.lang-globe { flex-shrink: 0; opacity: .9; }
+.lang-current { white-space: nowrap; }
+.lang-caret {
+    width: 0; height: 0; flex-shrink: 0;
+    border-inline: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    opacity: .8; transition: transform .15s ease;
+}
+.lang-btn[aria-expanded="true"] .lang-caret { transform: rotate(180deg); }
 
-/* The dropdown list itself is drawn by the OS, so it needs readable colours
-   of its own — white-on-transparent would be invisible there. */
-.lang-switch option { background: #fff; color: #1c1d20; font-weight: 500; }
+.lang-menu {
+    position: absolute; top: 100%; inset-inline-end: 0;
+    min-width: 186px; z-index: 80;
+    margin: 0; padding: 6px; list-style: none;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: 0 18px 38px rgba(0,0,0,.26);
+}
+.lang-menu[hidden] { display: none; }
+.lang-menu li { display: block; }
+.lang-menu button {
+    display: flex; align-items: center; gap: 9px;
+    width: 100%; padding: 9px 11px;
+    background: none; border: 0; border-radius: 7px;
+    color: var(--ink); cursor: pointer; text-align: start;
+    font-family: var(--sans); font-size: 14.5px; font-weight: 600;
+}
+.lang-menu button:hover { background: var(--wash); }
+.lang-menu button.is-current { color: var(--accent); }
+
+/* The tick holds its column whether or not it is showing, so the labels
+   stay on one left edge instead of jumping as the language changes. */
+.lang-tick { width: 14px; flex-shrink: 0; font-size: 12px; visibility: hidden; }
+.lang-menu button.is-current .lang-tick { visibility: visible; }
 
 /* Google's widget: kept in the layout but out of sight. display:none stops
    it building the control we depend on. */
@@ -494,7 +545,7 @@ body { top: 0 !important; }
 .goog-text-highlight { background: none !important; box-shadow: none !important; }
 
 @media (max-width: 880px) {
-    /* On a phone the bar is tight: keep the globe, drop the border. */
-    .lang-switch { padding: 0 8px; border-inline-end: 0; }
-    .lang-switch select { font-size: 13px; }
+    /* On a phone the bar is tight: keep the globe, drop the label. */
+    .lang-btn { padding: 0 10px; border-inline-start: 0; gap: 4px; }
+    .lang-current { display: none; }
 }

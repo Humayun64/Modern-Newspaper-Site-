@@ -6,6 +6,14 @@
             ? $path
             : asset('storage/'.$path);
     };
+
+    /** Colour pickers cannot hold an empty value, so an unset one shows the theme default. */
+    $colours = [
+        'color_header_bg' => ['Masthead and footer', '#1c1d20', 'The dark band behind the logo, the date bar and the footer.'],
+        'color_nav_bg'    => ['Menu bar',            '#26272b', 'The bar holding the main navigation.'],
+        'color_accent'    => ['Accent',              '#d32b2b', 'Breaking label, category badges, the Latest Video button.'],
+        'color_accent_dk' => ['Accent (hover)',      '#a81f1f', 'The darker shade used when the accent is hovered.'],
+    ];
 @endphp
 
 <x-filament-panels::page>
@@ -78,27 +86,88 @@
             </div>
         </x-filament::section>
 
-        {{-- ---------------- header button ---------------- --}}
+        {{-- ---------------- appearance ---------------- --}}
         <x-filament::section>
-            <x-slot name="heading">Header button</x-slot>
-            <x-slot name="description">The red button on the right of the navigation bar. Clear the label to hide it.</x-slot>
+            <x-slot name="heading">Appearance</x-slot>
+            <x-slot name="description">
+                Bar colours for the public site. Tick "Use default" to go back to the theme colour.
+            </x-slot>
 
-            <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-                <label style="display:grid;gap:.35rem">
-                    <span style="font-weight:600;font-size:.875rem">Button text</span>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="text" name="nav_cta_text" placeholder="Watch Videos"
-                                           value="{{ old('nav_cta_text', $settings['nav_cta_text'] ?? '') }}" />
-                    </x-filament::input.wrapper>
-                </label>
+            <div style="display:grid;gap:1.25rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+                @foreach ($colours as $key => [$label, $default, $help])
+                    @php $current = old($key, $settings[$key] ?? ''); @endphp
+                    <div style="display:grid;gap:.45rem">
+                        <span style="font-weight:600;font-size:.875rem">{{ $label }}</span>
 
-                <label style="display:grid;gap:.35rem">
-                    <span style="font-weight:600;font-size:.875rem">Button link</span>
-                    <x-filament::input.wrapper>
-                        <x-filament::input type="text" name="nav_cta_url" placeholder="https://…"
-                                           value="{{ old('nav_cta_url', $settings['nav_cta_url'] ?? '') }}" />
-                    </x-filament::input.wrapper>
-                </label>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <input type="color" name="{{ $key }}"
+                                   value="{{ $current ?: $default }}"
+                                   style="width:46px;height:34px;padding:0;border:1px solid rgba(128,128,128,.35);border-radius:.4rem;background:transparent;cursor:pointer">
+
+                            <code style="font-size:.8rem;opacity:.75">{{ $current ?: $default.' (default)' }}</code>
+                        </div>
+
+                        <label style="display:inline-flex;align-items:center;gap:6px;font-size:.8rem">
+                            <input type="checkbox" name="reset_{{ $key }}" value="1"> Use default
+                        </label>
+
+                        <span style="font-size:.78rem;opacity:.65">{{ $help }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </x-filament::section>
+
+        {{-- ---------------- header controls ---------------- --}}
+        <x-filament::section>
+            <x-slot name="heading">Header controls</x-slot>
+            <x-slot name="description">
+                The two links on the right of the navigation bar, in the order they appear.
+                Clear a label to hide that control.
+            </x-slot>
+
+            <div style="display:grid;gap:1.25rem">
+                <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">1 · Latest link text</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" name="nav_latest_text" placeholder="সাম্প্রতিক"
+                                               value="{{ old('nav_latest_text', $settings['nav_latest_text'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                    </label>
+
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">1 · Latest link URL</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" name="nav_latest_url" placeholder="{{ url('/latest') }}"
+                                               value="{{ old('nav_latest_url', $settings['nav_latest_url'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                        <span style="font-size:.78rem;opacity:.65">Leave empty to use the built-in সাম্প্রতিক page.</span>
+                    </label>
+                </div>
+
+                <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">2 · Button text</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" name="nav_cta_text" placeholder="Latest Video"
+                                               value="{{ old('nav_cta_text', $settings['nav_cta_text'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                        <span style="font-size:.78rem;opacity:.65">This label is excluded from the translator and stays as written.</span>
+                    </label>
+
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">2 · Button link</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" name="nav_cta_url" placeholder="{{ url('/video') }}"
+                                               value="{{ old('nav_cta_url', $settings['nav_cta_url'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                        <span style="font-size:.78rem;opacity:.65">Leave empty to use the built-in video listing.</span>
+                    </label>
+                </div>
+
+                <p style="font-size:.8rem;opacity:.65;margin:0">
+                    Search and the language switcher follow these two automatically.
+                </p>
             </div>
         </x-filament::section>
 

@@ -2,6 +2,19 @@
     $settings = \App\Models\Setting::all_cached();
     $logo     = $settings['site_logo'] ?? null;
 
+    /*
+     * Client correction 1: the masthead colour has to be changeable without a
+     * deploy, so the three bar colours come from settings and are written out
+     * as CSS variables. Blank settings fall back to the stylesheet's own
+     * values, which means an empty database behaves exactly as before.
+     */
+    $theme = array_filter([
+        '--accent'     => $settings['color_accent']    ?? null,
+        '--accent-dk'  => $settings['color_accent_dk'] ?? null,
+        '--bar'        => $settings['color_header_bg'] ?? null,
+        '--bar-2'      => $settings['color_nav_bg']    ?? null,
+    ], fn ($v) => filled($v));
+
     // Built in the menu builder. If no menu has been set up yet, fall back to
     // the categories so the site is never left without navigation.
     $navItems = \App\Models\Menu::tree('header');
@@ -12,7 +25,28 @@
                 'label' => $c->name, 'url' => route('category.show', $c), 'target' => null, 'children' => [],
             ]))->all();
     }
+
+    // Client corrections 6 and 8: a সাম্প্রতিক control in the header.
+    $latestText = $settings['nav_latest_text'] ?? 'সাম্প্রতিক';
+    $latestUrl  = ($settings['nav_latest_url'] ?? '') ?: route('latest');
+
+    // Client correction 10: the label reads "Latest Video" and must stay in
+    // English even when the page is translated.
+    $ctaText = $settings['nav_cta_text'] ?? 'Latest Video';
+    $ctaUrl  = ($settings['nav_cta_url'] ?? '') ?: route('video');
+
+    $languages = [
+        'bn' => 'বাংলা',
+        'en' => 'English',
+        'hi' => 'हिन्दी',
+        'ar' => 'العربية',
+        'ur' => 'اردو',
+    ];
 @endphp
+
+@if ($theme)
+    <style>:root{@foreach ($theme as $var => $value){{ $var }}:{{ $value }};@endforeach}</style>
+@endif
 
 <div class="topbar">
     <div class="wrap">
@@ -34,6 +68,9 @@
                          alt="{{ $settings['site_name'] ?? 'amarDesh24.news' }}">
                 </a>
             @else
+                {{-- Client correction 2 wants the logo here. Until one is
+                     uploaded under Site settings → Branding the name is shown
+                     as text, because an empty masthead is worse than either. --}}
                 <h1 class="brand-name"><a href="{{ route('home') }}">{{ $settings['site_name'] ?? 'amarDesh24.news' }}</a></h1>
                 <p class="brand-tag">{{ $settings['site_tagline'] ?? '' }}</p>
             @endif
@@ -51,28 +88,47 @@
             @include('partials.nav-items', ['items' => $navItems])
         </ul>
 
+        {{-- Client correction 11 fixes this order:
+             সাম্প্রতিক → Latest Video → search → language. --}}
         <div class="nav-actions">
-            {{-- Our own select, styled to the bar. Google's widget is mounted
-                 off-screen and driven from here — its own gadget is an
-                 unstyled white box that cannot be made to match anything. --}}
-            <label class="lang-switch">
-                <span class="lang-globe" aria-hidden="true">&#127760;</span>
-                <select id="lang-select" aria-label="ভাষা নির্বাচন করুন">
-                    <option value="bn">বাংলা</option>
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी</option>
-                    <option value="ar">العربية</option>
-                    <option value="ur">اردو</option>
-                </select>
-            </label>
+            @if ($latestText !== '')
+                <a class="nav-latest" href="{{ $latestUrl }}">
+                    <span class="nav-latest-dot" aria-hidden="true"></span>{{ $latestText }}
+                </a>
+            @endif
+
+            @if ($ctaText !== '')
+                {{-- translate="no" keeps Google's widget off this label. --}}
+                <a class="nav-cta notranslate" translate="no" href="{{ $ctaUrl }}">{{ $ctaText }}</a>
+            @endif
 
             <button class="nav-search" type="button" data-search-toggle aria-label="Search">&#9906;</button>
 
-            @if (($settings['nav_cta_text'] ?? 'Watch Videos') !== '')
-                <a class="nav-cta" href="{{ ($settings['nav_cta_url'] ?? '') ?: route('home') }}">
-                    {{ $settings['nav_cta_text'] ?? 'Watch Videos' }}
-                </a>
-            @endif
+            {{-- Client correction 19: a proper dropdown rather than a bare
+                 select. Google's own gadget stays mounted off-screen and is
+                 driven from here — it cannot be styled to match anything. --}}
+            <div class="lang-switch" translate="no">
+                <button class="lang-btn" type="button" data-lang-toggle
+                        aria-expanded="false" aria-haspopup="true" aria-label="ভাষা নির্বাচন করুন">
+                    <svg class="lang-globe" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                        <ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M3.3 9h17.4M3.3 15h17.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <span class="lang-current" data-lang-label>{{ $languages['bn'] }}</span>
+                    <span class="lang-caret" aria-hidden="true"></span>
+                </button>
+
+                <ul class="lang-menu" data-lang-menu hidden>
+                    @foreach ($languages as $code => $name)
+                        <li>
+                            <button type="button" data-lang="{{ $code }}" lang="{{ $code }}">
+                                <span class="lang-tick" aria-hidden="true">&#10003;</span>{{ $name }}
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
     </div>
 </nav>
@@ -94,8 +150,16 @@
 <script>
 (function () {
     var SOURCE = 'bn';
-    var select = document.getElementById('lang-select');
-    if (!select) return;
+    var NAMES  = @json($languages);
+
+    // Written without optional chaining or arrow functions on purpose — a
+    // good share of readers are on older Android webviews.
+    var root = document.querySelector('.lang-switch');
+    if (!root) return;
+
+    var toggle = root.querySelector('[data-lang-toggle]');
+    var menu   = root.querySelector('[data-lang-menu]');
+    var label  = root.querySelector('[data-lang-label]');
 
     /*
      * Google records the chosen language in TWO places, and both have to go
@@ -168,18 +232,54 @@
         })();
     }
 
-    select.value = currentLanguage();
+    function markCurrent(lang) {
+        label.textContent = NAMES[lang] || NAMES[SOURCE];
 
-    select.addEventListener('change', function () {
-        var lang = this.value;
+        menu.querySelectorAll('[data-lang]').forEach(function (btn) {
+            btn.classList.toggle('is-current', btn.getAttribute('data-lang') === lang);
+        });
+    }
+
+    function closeMenu() {
+        menu.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function openMenu() {
+        menu.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.hidden ? openMenu() : closeMenu();
+    });
+
+    menu.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-lang]');
+        if (!btn) return;
+
+        var lang = btn.getAttribute('data-lang');
+        closeMenu();
 
         if (lang === SOURCE) {
             restoreOriginal();
             return;
         }
 
+        markCurrent(lang);
         translateTo(lang);
     });
+
+    // Click-away and Escape, so the panel never gets stranded open.
+    document.addEventListener('click', function (e) {
+        if (!root.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeMenu();
+    });
+
+    markCurrent(currentLanguage());
 })();
 
 function googleTranslateElementInit() {

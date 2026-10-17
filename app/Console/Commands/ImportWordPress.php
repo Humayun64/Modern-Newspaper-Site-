@@ -61,6 +61,8 @@ class ImportWordPress extends Command
             return self::FAILURE;
         }
 
+        $this->repairEncodedSlugs();
+
         $this->importCategories();
         $this->importTags();
         $this->importPosts();
@@ -106,6 +108,49 @@ class ImportWordPress extends Command
 
     // ------------------------------------------------------------------
 
+    /**
+     * WordPress hands back Bangla slugs percent-encoded, so "স্বাস্থ্য" arrives
+     * as a 60-character %e0%a6… string. Saved raw it overflows the slug column
+     * — and when it fits, it still makes an unreadable URL. Decoding gives the
+     * Bangla back, which is both shorter and what the old links already mean:
+     * a browser re-encodes it on the way out, so indexed URLs keep working.
+     *
+     * This repairs rows written by an earlier run of the import, before the
+     * decode was in place.
+     */
+    protected function repairEncodedSlugs(): void
+    {
+        if ($this->dry) {
+            return;
+        }
+
+        foreach ([Category::class, Tag::class] as $model) {
+            foreach ($model::where('slug', 'like', '%\\%%')->get() as $row) {
+                $fixed = $this->safeSlug(rawurldecode((string) $row->slug) ?: $row->name, $model);
+
+                if ($fixed !== '' && $fixed !== $row->slug) {
+                    $row->update(['slug' => $fixed]);
+                    $this->line('  slug repaired: ' . $row->name);
+                }
+            }
+        }
+    }
+
+    /**
+     * A slug that will actually fit the column: decoded, trimmed to a length
+     * MySQL can index, and unique within its own table.
+     */
+    protected function safeSlug(string $source, string $model): string
+    {
+        $source = trim(rawurldecode($source));
+
+        if ($source === '') {
+            return '';
+        }
+
+        return BanglaSlug::unique(Str::limit($source, 120, ''), $model);
+    }
+
     protected function importCategories(): void
     {
         $this->line('');
@@ -118,8 +163,14 @@ class ImportWordPress extends Command
                 continue;
             }
 
+            // Match on the decoded slug as well, so a category created by an
+            // earlier run — or by hand in the admin — is reused rather than
+            // duplicated.
+            $decodedSlug = rawurldecode((string) ($term['slug'] ?? ''));
+
             $existing = Category::where('wp_term_id', $term['id'])
                 ->orWhere('slug', $term['slug'])
+                ->orWhere('slug', $decodedSlug)
                 ->first();
 
             if ($existing) {
@@ -138,7 +189,7 @@ class ImportWordPress extends Command
 
             $category = Category::create([
                 'name'        => $name,
-                'slug'        => $term['slug'] ?: BanglaSlug::make($name),
+                'slug'        => $this->safeSlug($term['slug'] ?: $name, Category::class),
                 'description' => $this->decode($term['description'] ?? ''),
                 'wp_term_id'  => $term['id'],
                 'is_active'   => true,
@@ -163,7 +214,12 @@ class ImportWordPress extends Command
                 continue;
             }
 
-            $existing = Tag::where('wp_term_id', $term['id'])->orWhere('slug', $term['slug'])->first();
+            $decodedSlug = rawurldecode((string) ($term['slug'] ?? ''));
+
+            $existing = Tag::where('wp_term_id', $term['id'])
+                ->orWhere('slug', $term['slug'])
+                ->orWhere('slug', $decodedSlug)
+                ->first();
 
             if ($existing) {
                 $this->tagMap[$term['id']] = $existing->id;
@@ -176,7 +232,7 @@ class ImportWordPress extends Command
 
             $tag = Tag::create([
                 'name'       => $name,
-                'slug'       => $term['slug'] ?: BanglaSlug::make($name),
+                'slug'       => $this->safeSlug($term['slug'] ?: $name, Tag::class),
                 'wp_term_id' => $term['id'],
             ]);
 
@@ -313,10 +369,9 @@ class ImportWordPress extends Command
             $post = $existing;
             $this->stats['updated']++;
         } else {
-            $attributes['slug'] = BanglaSlug::unique(
-                $wp['slug'] ? rawurldecode($wp['slug']) : $title,
-                Post::class
-            );
+            // Long Bangla headlines overflow the column just as term slugs do,
+            // so the source is capped before it is made unique.
+            $attributes['slug'] = $this->safeSlug($wp['slug'] ?: $title, Post::class);
 
             $post = Post::create($attributes);
             $this->stats['created']++;

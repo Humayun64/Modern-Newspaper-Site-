@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LatestController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SearchController;
@@ -40,6 +41,13 @@ Route::get('/feed/{category}', [FeedController::class, 'rss'])->name('rss.catego
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/search', SearchController::class)->name('search');
+
+// Cross-category listings reached from the header. They must be declared
+// above the /{slug} catch-all, or an article could never share these names.
+Route::get('/latest', [LatestController::class, 'latest'])->name('latest');
+Route::get('/video', [LatestController::class, 'video'])->name('video');
+Route::get('/podcast', [LatestController::class, 'podcast'])->name('podcast');
+
 Route::get('/category/{category}', [CategoryController::class, 'show'])->name('category.show');
 Route::get('/tag/{tag}', [TagController::class, 'show'])->name('tag.show');
 

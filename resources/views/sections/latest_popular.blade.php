@@ -1,22 +1,17 @@
-@php $uid = 'tabs-'.uniqid(); $popularList = $popular ?? collect(); @endphp
+{{--
+    The "জনপ্রিয়" tab was removed at the client's request. It ranked by view
+    count, and with no view logging in place yet it had nothing honest to
+    show — so the section is now a plain list of the newest articles.
+
+    home.blade.php still passes $popular in. It is simply unused here, which
+    means nothing else had to change and the tab can come back later by
+    restoring this file.
+--}}
 
 <section class="block">
-    <div class="tabs" role="tablist">
-        <button class="tab-btn" role="tab" aria-selected="true"  data-panel="{{ $uid }}-latest">&#128337; সর্বশেষ</button>
-        <button class="tab-btn" role="tab" aria-selected="false" data-panel="{{ $uid }}-popular">&#9889; জনপ্রিয়</button>
-    </div>
+    @include('partials.block-head', ['title' => 'সর্বশেষ', 'category' => null])
 
-    <div class="tab-panel" id="{{ $uid }}-latest">
-        @foreach ($posts as $post)
-            @include('partials.row-card', ['post' => $post])
-        @endforeach
-    </div>
-
-    <div class="tab-panel" id="{{ $uid }}-popular" hidden>
-        @forelse ($popularList as $post)
-            @include('partials.row-card', ['post' => $post])
-        @empty
-            <p style="color:var(--ink-soft);font-size:14px">এখনও পর্যাপ্ত তথ্য নেই।</p>
-        @endforelse
-    </div>
+    @foreach ($posts as $post)
+        @include('partials.row-card', ['post' => $post])
+    @endforeach
 </section>

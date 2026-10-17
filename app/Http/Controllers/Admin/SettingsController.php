@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,7 +14,11 @@ class SettingsController extends Controller
     protected array $fields = [
         'general' => [
             'site_name', 'site_tagline', 'site_email', 'site_address',
-            'about_text', 'nav_cta_text', 'nav_cta_url', 'posts_per_page',
+            'about_text', 'nav_cta_text', 'nav_cta_url',
+            'nav_latest_text', 'nav_latest_url', 'posts_per_page',
+        ],
+        'appearance' => [
+            'color_accent', 'color_accent_dk', 'color_header_bg', 'color_nav_bg',
         ],
         'social' => [
             'facebook_url', 'twitter_url', 'linkedin_url',
@@ -26,9 +29,16 @@ class SettingsController extends Controller
         ],
     ];
 
+    /** Appearance values go straight into a CSS variable, so they are checked. */
+    protected array $colourKeys = [
+        'color_accent', 'color_accent_dk', 'color_header_bg', 'color_nav_bg',
+    ];
+
     public function save(Request $request)
     {
-        abort_unless($request->user()?->isAdmin(), 403);
+        // #rgb, #rrggbb or #rrggbbaa. Anything else would be written into a
+        // style attribute unescaped, so it is rejected rather than cleaned.
+        $hex = ['nullable', 'regex:/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/'];
 
         $request->validate([
             'site_name'        => ['required', 'string', 'max:120'],
@@ -37,11 +47,29 @@ class SettingsController extends Controller
             'meta_description' => ['nullable', 'string', 'max:300'],
             'site_logo'        => ['nullable', 'image', 'max:2048'],
             'site_favicon'     => ['nullable', 'image', 'max:512'],
+            'color_accent'     => $hex,
+            'color_accent_dk'  => $hex,
+            'color_header_bg'  => $hex,
+            'color_nav_bg'     => $hex,
+        ], [
+            'color_accent.regex'    => 'The accent colour must be a hex value such as #d32b2b.',
+            'color_accent_dk.regex' => 'The accent hover colour must be a hex value such as #a81f1f.',
+            'color_header_bg.regex' => 'The masthead colour must be a hex value such as #1c1d20.',
+            'color_nav_bg.regex'    => 'The menu bar colour must be a hex value such as #26272b.',
         ]);
 
         foreach ($this->fields as $group => $keys) {
             foreach ($keys as $key) {
-                Setting::put($key, (string) $request->input($key, ''));
+                $value = (string) $request->input($key, '');
+
+                // A colour picker always posts something, so an unused slot
+                // would silently lock to #000000. Blank means "use the theme
+                // default", and the checkbox beside each picker sends that.
+                if (in_array($key, $this->colourKeys, true) && $request->boolean('reset_'.$key)) {
+                    $value = '';
+                }
+
+                Setting::put($key, $value);
             }
         }
 
@@ -60,9 +88,10 @@ class SettingsController extends Controller
             }
         }
 
+        // The public site caches its section tree and ticker; branding changes
+        // should show immediately rather than after the cache expires.
+        Cache::forget('home.sections');
         Cache::forget('footer.recent');
-
-        ActivityLog::record('settings_saved');
 
         return back()->with('settings_saved', true);
     }
