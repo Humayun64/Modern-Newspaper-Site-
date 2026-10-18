@@ -57,7 +57,7 @@
     <x-filament::section>
         <x-slot name="heading">Add a highlight</x-slot>
         <x-slot name="description">
-            Foreign coverage of Bangladesh. The PDF is what readers open — everything else is the card around it.
+            Foreign coverage of Bangladesh. The uploaded document is what readers open — everything else is the card around it.
         </x-slot>
 
         <form method="POST" action="{{ route('admin.coverage.store') }}"
@@ -99,15 +99,15 @@
 
             <div class="gc-row">
                 <label class="gc-field">
-                    <span>PDF</span>
-                    <input class="gc-file" type="file" name="pdf" accept="application/pdf">
-                    <small>Up to 12 MB.</small>
+                    <span>Document</span>
+                    <input class="gc-file" type="file" name="pdf" accept="application/pdf,image/*">
+                    <small>PDF or a page scan (JPG, PNG, WebP). Up to 12 MB. Opens in a panel on the site.</small>
                 </label>
 
                 <label class="gc-field">
                     <span>Cover image</span>
                     <input class="gc-file" type="file" name="cover" accept="image/*">
-                    <small>Optional. A page thumbnail works well.</small>
+                    <small>Optional — a page scan is used as its own thumbnail.</small>
                 </label>
             </div>
 
@@ -162,10 +162,14 @@
                             <td>{{ $item->published_on?->format('d M Y') ?? '—' }}</td>
 
                             <td>
-                                @if ($item->has_pdf)
-                                    <a class="gc-pdf" href="{{ $item->link }}" target="_blank" rel="noopener">PDF</a>
+                                @if ($item->has_file)
+                                    <a class="gc-pdf" href="{{ $item->file_url }}" target="_blank" rel="noopener">
+                                        {{ $item->badge ?? 'file' }}
+                                    </a>
+                                @elseif ($item->source_url)
+                                    <span class="gc-nopdf">link only</span>
                                 @else
-                                    <span class="gc-nopdf">link</span>
+                                    <span class="gc-nopdf">&mdash;</span>
                                 @endif
                             </td>
 
@@ -179,7 +183,7 @@
                                     </form>
 
                                     <form method="POST" action="{{ route('admin.coverage.destroy', $item) }}"
-                                          onsubmit="return confirm('Remove this highlight and its PDF?')">
+                                          onsubmit="return confirm('Remove this highlight and its file?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="gc-x is-danger" type="submit">Remove</button>

@@ -18,7 +18,10 @@ class SettingsController extends Controller
             'nav_latest_text', 'nav_latest_url', 'posts_per_page',
         ],
         'editorial' => [
-            'editor_name', 'editor_role', 'editor_bio',
+            'editor_name', 'editor_role', 'editor_bio', 'editorial_heading',
+        ],
+        'headings' => [
+            'stock_title', 'coverage_heading', 'coverage_note',
         ],
         'widgets' => [
             'dse_index', 'dse_change', 'dse_as_of', 'stock_embed',
@@ -58,6 +61,10 @@ class SettingsController extends Controller
             'editor_name'      => ['nullable', 'string', 'max:120'],
             'editor_role'      => ['nullable', 'string', 'max:120'],
             'editor_bio'       => ['nullable', 'string', 'max:400'],
+            'editorial_heading'=> ['nullable', 'string', 'max:60'],
+            'stock_title'      => ['nullable', 'string', 'max:60'],
+            'coverage_heading' => ['nullable', 'string', 'max:60'],
+            'coverage_note'    => ['nullable', 'string', 'max:120'],
             // Typed in by hand, so it is checked: "5,432.10" and "-0.82".
             'dse_index'        => ['nullable', 'regex:/^[0-9][0-9,]*(\\.[0-9]{1,2})?$/'],
             'dse_change'       => ['nullable', 'regex:/^[+-]?[0-9]+(\\.[0-9]{1,2})?$/'],
@@ -116,6 +123,7 @@ class SettingsController extends Controller
         Cache::forget('home.sections');
         Cache::forget('footer.recent');
         Cache::forget('topbar.weather');
+        Cache::forget('home.global_coverage');
 
         // The weather cache key carries the coordinates, so moving the pin
         // has to clear whatever was cached for the old ones.

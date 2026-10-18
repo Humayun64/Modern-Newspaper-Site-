@@ -43,6 +43,8 @@ class BuildHeaderMenu extends Command
         ['হোম',          'home',     null],
         ['শীর্ষ খবর',     'category', 'শীর্ষ'],
         ['জাতীয়',        'category', 'জাতীয় সাক্ষ্য'],
+        // Correction 6. Created empty by --create; the client fills it later.
+        ['রাজনীতি',       'category', 'রাজনীতি'],
         ['আন্তর্জাতিক',    'category', 'আন্তর্জাতিক সাক্ষ্য'],
         ['যুদ্ধ',          'category', 'যুদ্ধ'],
         ['খেলাধুলা',      'category', 'খেলাধুলা'],

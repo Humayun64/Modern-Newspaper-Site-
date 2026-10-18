@@ -54,12 +54,7 @@
             <span>{{ now()->format('F j, Y') }}</span>
             <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
         </span>
-
-        {{-- Correction 15: weather and the stock index, top right. --}}
-        <div class="topbar-right">
-            @include('partials.topbar-widgets')
-            @include('partials.social-row')
-        </div>
+        @include('partials.social-row')
     </div>
 </div>
 
@@ -103,8 +98,17 @@
             @endif
 
             @if ($ctaText !== '')
-                {{-- translate="no" keeps Google's widget off this label. --}}
-                <a class="nav-cta notranslate" translate="no" href="{{ $ctaUrl }}">{{ $ctaText }}</a>
+                {{-- Correction 10, as the client now wants it: this label IS
+                     translated along with the rest of the page. The written
+                     note asked for the opposite, so the guard that held it in
+                     English is removed rather than merely switched off — to
+                     go back, put translate="no" and class="notranslate" on
+                     this link and nothing else is needed.
+
+                     The language switcher below keeps its own translate="no":
+                     "বাংলা" and "English" are the names of the languages and
+                     must not be translated into each other. --}}
+                <a class="nav-cta" href="{{ $ctaUrl }}">{{ $ctaText }}</a>
             @endif
 
             <button class="nav-search" type="button" data-search-toggle aria-label="Search">&#9906;</button>

@@ -1,95 +1,90 @@
-# Client corrections — batch 5
+# Batch 9 — PDF viewer, and the weather card
 
-Fixes the breaking ticker going empty, and moves the stock and weather
-readings into the sidebar as proper cards.
-
----
-
-## 1. Breaking news was disappearing — my mistake
-
-Batch 4 measured the day from **publish time**. Every article on this site was
-imported and carries its original date, so everything was already older than a
-day: marking something breaking did nothing, and the strip went blank.
-
-The rule should have been a day from the moment it is **marked** breaking.
-That needs a timestamp of its own, which this batch adds.
-
-- new `breaking_since` column, stamped when the flag goes on and cleared when it comes off
-- the ticker and `site:expire-breaking` both measure from it
-- anything already flagged gets its day starting from the moment you migrate,
-  so nothing vanishes as you run this
-
-An editor can now mark a week-old story breaking and get a full day out of it.
-
-## 2. Stock and weather, in the sidebar
-
-They were a thin strip in the top bar. They are now two cards in the homepage
-sidebar, which is where the client's reference has them.
-
-**Weather** needs nothing: Dhaka, from Open-Meteo, refreshed every half hour.
-It shows the temperature, conditions, feels-like, today's high and low,
-humidity and wind. Another city is three fields in Site settings.
-
-**Stock** has two ways to fill it, under Site settings → Top bar widgets:
-
-- **Stock widget code** — paste an embed from a market-data provider
-  (TradingView and similar give one away free). That is what sites with a
-  live DSE chart are actually running; the exchange publishes no free feed of
-  its own, so there is nothing to build against directly. This is the one
-  that looks like the client's reference.
-- **DSEX index / change / as of** — typed in. Plainer, always correct, and no
-  third-party script on the page. Used when the embed is empty.
+Two things: the Global coverage documents now open in a panel on the page,
+and the weather card is redesigned — plus the reason it was missing.
 
 ---
 
-## Install — one command at a time
+## Install
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch5\amardesh24-batch5\*" "%USERPROFILE%\amardesh24\" /E /H /Y
-```
-```
-php artisan migrate
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch9\amardesh24-batch9\*" "%USERPROFILE%\amardesh24\" /E /H /Y
 ```
 ```
 php artisan optimize:clear
 ```
-```
-php artisan site:refresh-home --force
-```
-
-That last one re-marks the breaking articles with the new timestamp, so the
-strip comes back immediately instead of waiting for an editor.
 
 ---
 
-## Files
+## Why the weather card was missing
+
+Almost certainly the same thing that stopped the WordPress import: **PHP on
+your machine has no CA bundle configured**, so it cannot make an HTTPS
+request. The import got past it with `-d curl.cainfo=…` on the command line,
+but `php artisan serve` never saw that setting — so the weather call fails
+and the card hides itself rather than printing an error on the public site.
+
+Fix it properly this time, in PowerShell (not cmd — the earlier `echo`
+silently wrote nothing):
 
 ```
-database/migrations/2026_10_18_000002_add_breaking_since_to_posts_table.php  new
-app/Models/Post.php                                                          replaces
-app/Console/Commands/ExpireBreaking.php                                      replaces
-app/Console/Commands/RefreshHomepage.php                                     replaces
-app/Http/Controllers/Admin/SettingsController.php                            replaces
-resources/views/partials/ticker.blade.php                                    replaces
-resources/views/partials/widget-weather.blade.php                            new
-resources/views/partials/widget-stock.blade.php                              new
-resources/views/home.blade.php                                               replaces
-resources/views/filament/admin/pages/manage-settings.blade.php               replaces
-public/css/widgets.css                                                       replaces
+powershell -Command "Add-Content -Path 'D:\Xammp\php83\php.ini' -Value 'curl.cainfo = D:\Xammp\apache\bin\curl-ca-bundle.crt'"
 ```
+```
+powershell -Command "Add-Content -Path 'D:\Xammp\php83\php.ini' -Value 'openssl.cafile = D:\Xammp\apache\bin\curl-ca-bundle.crt'"
+```
+
+Check it took:
+
+```
+php -i | findstr /i "cainfo cafile"
+```
+
+Both should now show the path instead of "no value". Then **stop and restart
+`php artisan serve`** — php.ini is only read at startup.
+
+On the live server this does not arise; Linux has a system CA bundle. If the
+card is missing there too, tell me and I will look at something else.
 
 ---
 
-## Notes
+## The weather card
 
-The top-bar strip is still there and still works; the sidebar cards are
-separate. If the client wants the strip gone now that the cards exist, clear
-the DSEX field and untick "Show Dhaka weather" — or say so and I will take
-the strip out entirely.
+Laid out like the one you sent: place, the big reading with conditions,
+feels-like and today's high/low and rain chance, then air quality under a
+rule, then humidity and wind.
 
-The cards are on the homepage only. Say the word if they should follow the
-sidebar onto category and article pages too.
+Air quality is the US AQI from Open-Meteo's air-quality service — free, no
+key, same as the forecast. It is a second call, and a nice-to-have: if it is
+slow or down the card still shows the weather.
 
-**Pasted widget code is printed to the page as-is.** Only an admin can set
-it, which is the same trust any "paste this code" box carries — but it is why
-that field is not something to hand to an editor.
+The band is written in words as well as drawn on the bar. A colour on its own
+tells a reader with colour-blindness nothing, and "অস্বাস্থ্যকর" tells
+everyone the same thing.
+
+---
+
+## Global coverage — documents open on the page
+
+**Images are accepted now, not only PDFs.** The file you uploaded,
+`AP-News-Habib-Bhai.pdf.webp`, is a picture of a page, not a PDF — which is
+why the row said "link" and nothing opened. Your current site's highlights
+are all page scans like that, so refusing anything but PDF would have turned
+away the very files this section is for.
+
+Clicking a card now opens a panel over the page:
+
+- a **PDF** goes in a frame, so the browser's own viewer gives page controls
+- a **page scan** is shown full width and scrolls, the way you read a
+  newspaper page
+
+The bar carries the headline, "নতুন ট্যাবে", "মূল খবর" when an original link
+was given, and a close button. Escape or a click outside closes it. On a
+phone it fills the screen.
+
+The corner badge now says what the file actually is — "PDF" or "ছবি". A
+reader told "PDF" who gets a picture stops trusting the next badge.
+
+**The "Low and order" entry has no file on it, only a link.** Remove it and
+add it again with the `.webp` in the Document box, and it will open in the
+panel.

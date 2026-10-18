@@ -30,7 +30,13 @@
 
 @if (filled($name))
     <section class="block author-card">
-        @include('partials.block-head', ['title' => 'সম্পাদকীয়', 'category' => null])
+        {{-- Correction 22: this card introduces the owner, so it is headed
+             "পরিচালকের পরিচিতি" rather than "সম্পাদকীয়". The heading is a
+             setting, so it can be changed again without a deploy. --}}
+        @include('partials.block-head', [
+            'title'    => trim((string) ($s['editorial_heading'] ?? '')) ?: 'পরিচালকের পরিচিতি',
+            'category' => null,
+        ])
 
         <img src="{{ $photoUrl }}" alt="{{ $name }}" loading="lazy">
 

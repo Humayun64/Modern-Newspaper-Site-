@@ -33,7 +33,7 @@
 @if ($embed !== '' || $index !== '')
     <section class="block stock-card">
         <div class="block-head">
-            <h2 class="block-title">ঢাকা স্টক এক্সচেঞ্জ</h2>
+            <h2 class="block-title">{{ trim((string) ($s['stock_title'] ?? '')) ?: 'ঢাকা স্টক এক্সচেঞ্জ' }}</h2>
             @if ($asOf !== '')
                 <span class="block-more">{{ $asOf }}</span>
             @endif

@@ -144,6 +144,15 @@
                 </div>
 
                 <label style="display:grid;gap:.35rem">
+                    <span style="font-weight:600;font-size:.875rem">Card heading</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" name="editorial_heading" maxlength="60"
+                                           placeholder="পরিচালকের পরিচিতি"
+                                           value="{{ old('editorial_heading', $settings['editorial_heading'] ?? '') }}" />
+                    </x-filament::input.wrapper>
+                </label>
+
+                <label style="display:grid;gap:.35rem">
                     <span style="font-weight:600;font-size:.875rem">Short note</span>
                     <textarea name="editor_bio" rows="3" maxlength="400"
                               style="width:100%;padding:.55rem .75rem;border:1px solid rgba(128,128,128,.35);border-radius:.5rem;background:transparent;color:inherit;font:inherit">{{ old('editor_bio', $settings['editor_bio'] ?? '') }}</textarea>
@@ -376,6 +385,41 @@
                         </x-filament::input.wrapper>
                     </label>
                 @endforeach
+            </div>
+        </x-filament::section>
+
+        {{-- ---------------- section headings ---------------- --}}
+        <x-filament::section>
+            <x-slot name="heading">Section headings</x-slot>
+            <x-slot name="description">Titles the client may want worded differently. Leave empty for the default.</x-slot>
+
+            <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+                <label style="display:grid;gap:.35rem">
+                    <span style="font-weight:600;font-size:.875rem">Stock card</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" name="stock_title" maxlength="60"
+                                           placeholder="ঢাকা স্টক এক্সচেঞ্জ"
+                                           value="{{ old('stock_title', $settings['stock_title'] ?? '') }}" />
+                    </x-filament::input.wrapper>
+                </label>
+
+                <label style="display:grid;gap:.35rem">
+                    <span style="font-weight:600;font-size:.875rem">Global coverage</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" name="coverage_heading" maxlength="60"
+                                           placeholder="বিশ্ব গণমাধ্যমে"
+                                           value="{{ old('coverage_heading', $settings['coverage_heading'] ?? '') }}" />
+                    </x-filament::input.wrapper>
+                </label>
+
+                <label style="display:grid;gap:.35rem">
+                    <span style="font-weight:600;font-size:.875rem">Global coverage — small line</span>
+                    <x-filament::input.wrapper>
+                        <x-filament::input type="text" name="coverage_note" maxlength="120"
+                                           placeholder="আন্তর্জাতিক সংবাদমাধ্যমে বাংলাদেশ"
+                                           value="{{ old('coverage_note', $settings['coverage_note'] ?? '') }}" />
+                    </x-filament::input.wrapper>
+                </label>
             </div>
         </x-filament::section>
 

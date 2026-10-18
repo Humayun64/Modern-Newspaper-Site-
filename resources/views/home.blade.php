@@ -34,7 +34,10 @@
         </div>
 
         <aside class="sidebar">
-            @include('partials.ad', ['placement' => 'sidebar_top'])
+            {{-- Correction 5: no advertising on the homepage. The sidebar ad
+                 slot is gone from this page only — the ads module and the
+                 masthead banner are untouched, so nothing has to be rebuilt
+                 if the client changes their mind. --}}
 
             {{-- Correction 15: the stock index and the weather, in the
                  sidebar where the client wants them. Each draws nothing

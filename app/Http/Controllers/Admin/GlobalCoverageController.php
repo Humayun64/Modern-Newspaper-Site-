@@ -20,11 +20,15 @@ class GlobalCoverageController extends Controller
             'summary'      => ['nullable', 'string', 'max:400'],
             'source_url'   => ['nullable', 'url', 'max:500'],
             'published_on' => ['nullable', 'date'],
-            // 12 MB: a scanned newspaper page is bigger than a web PDF.
-            'pdf'          => ['nullable', 'file', 'mimetypes:application/pdf', 'max:12288'],
+            // A PDF or a page scan. Most of the client's highlights are
+            // .webp images of newspaper pages, so refusing anything but PDF
+            // would have turned away the very files this section is for.
+            // 12 MB: a scanned page is bigger than a web PDF.
+            'pdf'          => ['nullable', 'file', 'max:12288', 'mimetypes:application/pdf,image/jpeg,image/png,image/webp,image/gif,image/avif'],
             'cover'        => ['nullable', 'image', 'max:2048'],
         ], [
-            'pdf.mimetypes' => 'That file is not a PDF.',
+            'pdf.mimetypes' => 'The document must be a PDF or an image (JPG, PNG, WebP).',
+            'pdf.max'       => 'The document must be 12 MB or smaller.',
         ]);
 
         $row = [
@@ -43,6 +47,10 @@ class GlobalCoverageController extends Controller
 
         if ($request->hasFile('cover')) {
             $row['cover_path'] = $request->file('cover')->store('coverage', 'public');
+        } elseif (isset($row['pdf_path']) && $this->looksLikeImage($row['pdf_path'])) {
+            // A page scan is its own thumbnail. Asking the client to upload
+            // the same picture twice is a way of losing them.
+            $row['cover_path'] = $row['pdf_path'];
         }
 
         GlobalCoverage::create($row);
@@ -50,6 +58,15 @@ class GlobalCoverageController extends Controller
         Cache::forget('home.global_coverage');
 
         return back()->with('coverage_saved', 'Added.');
+    }
+
+    protected function looksLikeImage(string $path): bool
+    {
+        return in_array(
+            strtolower(pathinfo($path, PATHINFO_EXTENSION)),
+            ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
+            true
+        );
     }
 
     public function toggle(Request $request, GlobalCoverage $coverage)
@@ -68,7 +85,7 @@ class GlobalCoverageController extends Controller
         abort_unless($request->user()?->isAdmin(), 403);
 
         // Only delete files we put on the disk, never a pasted URL.
-        foreach ([$coverage->pdf_path, $coverage->cover_path] as $path) {
+        foreach (array_unique([$coverage->pdf_path, $coverage->cover_path]) as $path) {
             if (filled($path) && ! str_starts_with($path, 'http') && ! str_starts_with($path, '/')) {
                 Storage::disk('public')->delete($path);
             }
