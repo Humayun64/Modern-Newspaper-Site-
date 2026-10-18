@@ -46,9 +46,12 @@ class CheckWidgets extends Command
                 'latitude' => $lat, 'longitude' => $lon, 'current' => 'us_aqi',
             ], 'current.us_aqi'],
 
-            'Prayer times' => ['https://api.aladhan.com/v1/timings', [
+            // AlAdhan want the date in the path; without it they answer 400.
+            'Prayer times' => ['https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
                 'latitude' => $lat, 'longitude' => $lon,
-                'method'   => (int) ($s['prayer_method'] ?? 1), 'school' => 1,
+                'method'   => (int) (trim((string) ($s['prayer_method'] ?? '')) ?: 1),
+                'school'   => 1,
+                'timezonestring' => 'Asia/Dhaka',
             ], 'data.timings.Fajr'],
         ];
 
@@ -93,7 +96,7 @@ class CheckWidgets extends Command
 
             // The prayer key carries today's date and the method.
             Cache::forget('widget.prayer.'.now()->toDateString().'.'.$lat.','.$lon
-                .'.'.(int) ($s['prayer_method'] ?? 1));
+                .'.'.(int) (trim((string) ($s['prayer_method'] ?? '')) ?: 1));
 
             $this->line('Caches cleared — the next page load fetches fresh.');
             $this->line('');

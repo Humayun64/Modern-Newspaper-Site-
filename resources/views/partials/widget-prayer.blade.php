@@ -11,7 +11,9 @@
     $lon     = (float) ($s['prayer_lon'] ?? $s['weather_lon'] ?? 90.4125);
     // 1 = University of Islamic Sciences, Karachi — the calculation most
     // widely used in Bangladesh. Changeable in Site settings.
-    $method  = (int) ($s['prayer_method'] ?? 1);
+    // A blank setting casts to 0, which is a different calculation
+    // altogether — so an empty box means "the default", not "method zero".
+    $method  = (int) (trim((string) ($s['prayer_method'] ?? '')) ?: 1);
 
     /*
      * Times come from AlAdhan — free, no key, no account.
@@ -27,11 +29,15 @@
         60 * 60 * 12,
         function () use ($lat, $lon, $method) {
             try {
-                $r = Http::timeout(5)->get('https://api.aladhan.com/v1/timings', [
+                // The date is part of the PATH, not a query parameter.
+                // Calling /v1/timings bare is a 400 from them — which is
+                // exactly what the card was quietly swallowing.
+                $r = Http::timeout(5)->get('https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
                     'latitude'  => $lat,
                     'longitude' => $lon,
                     'method'    => $method,
-                    'school'    => 1,   // Hanafi, for Asr
+                    'school'    => 1,       // Hanafi, for Asr
+                    'timezonestring' => 'Asia/Dhaka',
                 ]);
 
                 if ($r->failed()) {
