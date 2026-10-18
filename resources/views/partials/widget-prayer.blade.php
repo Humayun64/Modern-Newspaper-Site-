@@ -28,45 +28,60 @@
         'widget.prayer.'.now()->toDateString().'.'.$lat.','.$lon.'.'.$method,
         60 * 60 * 12,
         function () use ($lat, $lon, $method) {
-            try {
-                // The date is part of the PATH, not a query parameter.
-                // Calling /v1/timings bare is a 400 from them — which is
-                // exactly what the card was quietly swallowing.
-                $r = Http::timeout(5)->get('https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
-                    'latitude'  => $lat,
-                    'longitude' => $lon,
-                    'method'    => $method,
-                    'school'    => 1,       // Hanafi, for Asr
-                    'timezonestring' => 'Asia/Dhaka',
-                ]);
+            /*
+             * AlAdhan have changed the shape of this endpoint more than once,
+             * and a wrong shape is a bare 400 with no clue in it. Rather than
+             * pin the card to one guess, try the shapes in order and keep the
+             * first that answers. It costs an extra request only when the
+             * first one fails, and the result is cached for the day.
+             */
+            $attempts = [
+                ['https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
+                    'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+                ]],
+                ['https://api.aladhan.com/v1/timings/'.now()->timestamp, [
+                    'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+                ]],
+                ['https://api.aladhan.com/v1/timings', [
+                    'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+                ]],
+                ['https://api.aladhan.com/v1/timingsByCity/'.now()->format('d-m-Y'), [
+                    'city' => 'Dhaka', 'country' => 'Bangladesh', 'method' => $method, 'school' => 1,
+                ]],
+            ];
 
-                if ($r->failed()) {
-                    return null;
-                }
+            foreach ($attempts as [$url, $query]) {
+                try {
+                    $r = Http::timeout(5)->acceptJson()->get($url, $query);
 
-                $t = $r->json('data.timings');
-
-                if (! is_array($t) || ! isset($t['Fajr'])) {
-                    return null;
-                }
-
-                // Keep only what is shown, and strip the " (+06)" AlAdhan
-                // sometimes appends to a time.
-                $keep = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-                $out  = [];
-
-                foreach ($keep as $k) {
-                    if (! isset($t[$k])) {
+                    if ($r->failed()) {
                         continue;
                     }
 
-                    $out[$k] = trim(explode(' ', trim($t[$k]))[0]);
-                }
+                    $t = $r->json('data.timings');
 
-                return $out;
-            } catch (\Throwable $e) {
-                return null;
+                    if (! is_array($t) || ! isset($t['Fajr'])) {
+                        continue;
+                    }
+
+                    // Keep only what is shown, and strip the " (+06)" that
+                    // AlAdhan sometimes appends to a time.
+                    $keep = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+                    $out  = [];
+
+                    foreach ($keep as $k) {
+                        if (isset($t[$k])) {
+                            $out[$k] = trim(explode(' ', trim($t[$k]))[0]);
+                        }
+                    }
+
+                    return $out;
+                } catch (\Throwable $e) {
+                    continue;
+                }
             }
+
+            return null;
         }
     );
 

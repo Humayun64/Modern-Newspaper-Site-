@@ -26,15 +26,23 @@ use Illuminate\Support\Facades\Http;
  */
 class FetchDseIndex extends Command
 {
-    protected $signature = 'site:dse-index {--url=} {--dry-run} {--debug}';
+    protected $signature = 'site:dse-index {--url=} {--dry-run} {--debug} {--links}';
 
     protected $description = 'Fetch the DSEX index from dsebd.org into the sidebar card';
 
     /** Tried in order; the first page that yields a number wins. */
+    /*
+     * Their own pages move about — two of the three I started with now
+     * answer 410, and the homepage carries "DSEX" only as a label with no
+     * figure beside it. These are the remaining candidates; --links lists
+     * what the homepage actually points at, for when they move again.
+     */
     protected array $sources = [
+        'https://www.dsebd.org/market_summary.php',
+        'https://www.dsebd.org/dse_market_summary.php',
+        'https://www.dsebd.org/index_chart_data.php',
+        'https://www.dsebd.org/latest_share_price_scroll_by_ltp.php',
         'https://www.dsebd.org/',
-        'https://www.dsebd.org/latest_share_price_scroll_l.php',
-        'https://www.dsebd.org/dseX_share.php',
     ];
 
     public function handle(): int
@@ -48,6 +56,10 @@ class FetchDseIndex extends Command
 
             if ($html === null) {
                 continue;
+            }
+
+            if ($this->option('links')) {
+                $this->showLinks($html, $url);
             }
 
             $text = $this->toText($html);
@@ -170,6 +182,49 @@ class FetchDseIndex extends Command
         $this->info('Saved. The sidebar card will show it on the next page load.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * List the page's own links, so we can see where they have moved the
+     * market summary to rather than guessing at URLs.
+     */
+    protected function showLinks(string $html, string $base): void
+    {
+        preg_match_all('#<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>#is', $html, $m, PREG_SET_ORDER);
+
+        $this->line('');
+        $this->comment('--- links on this page ---');
+
+        $seen = [];
+
+        foreach ($m as $a) {
+            $href  = trim($a[1]);
+            $label = trim(preg_replace('/\s+/', ' ', strip_tags($a[2])));
+
+            // Only their own pages, and only ones whose wording suggests
+            // they might carry an index.
+            if ($href === '' || str_starts_with($href, '#') || str_starts_with($href, 'javascript')) {
+                continue;
+            }
+
+            if (! preg_match('/index|market|summary|dsex|chart|price/i', $href.' '.$label)) {
+                continue;
+            }
+
+            if (isset($seen[$href])) {
+                continue;
+            }
+
+            $seen[$href] = true;
+            $this->line('  '.str_pad(mb_substr($label, 0, 38), 40).$href);
+        }
+
+        if ($seen === []) {
+            $this->line('  (nothing on this page looks like a market or index link)');
+        }
+
+        $this->comment('--- end links ---');
+        $this->line('');
     }
 
     /** For when the pattern misses: show what is actually around the label. */

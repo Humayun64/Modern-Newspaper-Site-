@@ -28,8 +28,9 @@ class CheckWidgets extends Command
     {
         $s = Setting::all_cached();
 
-        $lat = (float) ($s['weather_lat'] ?? 23.8103);
-        $lon = (float) ($s['weather_lon'] ?? 90.4125);
+        $lat    = (float) ($s['weather_lat'] ?? 23.8103);
+        $lon    = (float) ($s['weather_lon'] ?? 90.4125);
+        $method = (int) (trim((string) ($s['prayer_method'] ?? '')) ?: 1);
 
         $this->line('');
         $this->line('PHP can reach HTTPS?');
@@ -46,12 +47,23 @@ class CheckWidgets extends Command
                 'latitude' => $lat, 'longitude' => $lon, 'current' => 'us_aqi',
             ], 'current.us_aqi'],
 
-            // AlAdhan want the date in the path; without it they answer 400.
-            'Prayer times' => ['https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
-                'latitude' => $lat, 'longitude' => $lon,
-                'method'   => (int) (trim((string) ($s['prayer_method'] ?? '')) ?: 1),
-                'school'   => 1,
-                'timezonestring' => 'Asia/Dhaka',
+            // AlAdhan have moved this endpoint about, and a wrong shape is
+            // a bare 400. Each variant is tried so one run tells us which
+            // one they are answering today.
+            'Prayer (dated)' => ['https://api.aladhan.com/v1/timings/'.now()->format('d-m-Y'), [
+                'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+            ], 'data.timings.Fajr'],
+
+            'Prayer (stamp)' => ['https://api.aladhan.com/v1/timings/'.now()->timestamp, [
+                'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+            ], 'data.timings.Fajr'],
+
+            'Prayer (bare)'  => ['https://api.aladhan.com/v1/timings', [
+                'latitude' => $lat, 'longitude' => $lon, 'method' => $method, 'school' => 1,
+            ], 'data.timings.Fajr'],
+
+            'Prayer (city)'  => ['https://api.aladhan.com/v1/timingsByCity/'.now()->format('d-m-Y'), [
+                'city' => 'Dhaka', 'country' => 'Bangladesh', 'method' => $method, 'school' => 1,
             ], 'data.timings.Fajr'],
         ];
 
@@ -65,6 +77,11 @@ class CheckWidgets extends Command
 
                 if ($r->failed()) {
                     $this->error('                 HTTP '.$r->status());
+                    // The status alone says nothing; these services put the
+                    // reason in the body, and that is what we actually need.
+                    $this->line('                 '.\Illuminate\Support\Str::limit(
+                        trim(preg_replace('/\s+/', ' ', $r->body())), 300
+                    ));
                     $failed++;
                     continue;
                 }
@@ -103,7 +120,7 @@ class CheckWidgets extends Command
         }
 
         if ($failed === 0) {
-            $this->info('All three reachable. If a card is still missing, it is cached —');
+            $this->info('Everything reachable. If a card is still missing, it is cached —');
             $this->line('run this again with --clear and reload the page.');
 
             return self::SUCCESS;
@@ -111,6 +128,8 @@ class CheckWidgets extends Command
 
         $this->line('');
         $this->error($failed.' of '.count($checks).' could not be reached.');
+        $this->line('The prayer card needs only ONE of its four shapes to work,');
+        $this->line('so some red there is expected and not a problem by itself.');
 
         if (stripos(PHP_OS_FAMILY, 'Windows') !== false && ! ini_get('curl.cainfo')) {
             $this->line('');
