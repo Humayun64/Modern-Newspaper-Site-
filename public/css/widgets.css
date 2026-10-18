@@ -5,6 +5,29 @@
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
+   TYPEFACE
+
+   Hind Siliguri's Bangla numerals were being misread — ১ and ২ in particular,
+   which matters on a site where every date and count is in Bangla digits.
+   Noto Sans Bengali draws them with clearly different shapes and holds up at
+   12-13px, which is where most of this page lives.
+
+   Declared here rather than in site.css because this file loads after it,
+   so the variables win without the main stylesheet being rewritten.
+   -------------------------------------------------------------------------- */
+
+:root {
+    --sans:  'Noto Sans Bengali', 'Hind Siliguri', 'Segoe UI', system-ui, sans-serif;
+    --serif: 'Noto Serif Bengali', Georgia, serif;
+}
+
+/* Bangla digits sit small inside a Latin-sized line, so numbers get a touch
+   more room wherever they carry meaning on their own. */
+.meta, .pr-time, .wx-range, .wx-aqi-scale, .gc-caption {
+    font-feature-settings: 'lnum' 1;
+}
+
+/* --------------------------------------------------------------------------
    TOP BAR — weather and stock index (correction 15)
    -------------------------------------------------------------------------- */
 
@@ -197,27 +220,116 @@ a.gc-card:hover .gc-caption { color: var(--accent); }
 
 /* --------------------------------------------------------------------------
    SIDEBAR: WEATHER (correction 15)
+
+   Laid out like the card the client pointed at: place, then the reading at a
+   glance, then air quality under a rule.
    -------------------------------------------------------------------------- */
+
+.weather-card { text-align: center; }
+
+.wx-place {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+.wx-pin { font-size: 8px; color: var(--accent); }
 
 .wx-main {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 4px 0 14px;
+    justify-content: center;
+    gap: 10px;
+    padding: 6px 0 14px;
+    text-align: start;
 }
 
-.wx-icon { font-size: 40px; line-height: 1; }
-
-.wx-now { display: grid; gap: 2px; }
+.wx-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
 
 .wx-temp {
-    font-size: 36px;
+    font-size: 46px;
     font-weight: 700;
     line-height: 1;
+    letter-spacing: -1px;
     font-variant-numeric: tabular-nums;
 }
 
-.wx-label { font-size: 13px; color: var(--ink-soft); }
+.wx-side { display: grid; gap: 2px; min-width: 0; }
+
+.wx-label { font-size: 13.5px; font-weight: 700; }
+.wx-feels { font-size: 12.5px; color: var(--ink-soft); }
+
+.wx-range {
+    display: flex;
+    gap: 9px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- air quality ---- */
+
+.wx-aqi {
+    padding-top: 13px;
+    border-top: 1px solid var(--rule);
+    text-align: start;
+}
+
+.wx-aqi-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.wx-aqi-title { font-size: 13px; font-weight: 700; }
+.wx-aqi-value { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* The band is named in words. The bar is a second reading of the same thing,
+   never the only one — a colour alone does not tell everyone anything. */
+.wx-aqi-band { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+
+.wx-aqi-bar {
+    position: relative;
+    height: 7px;
+    margin-top: 9px;
+    border-radius: 999px;
+    background: linear-gradient(
+        to right,
+        #0ca30c 0%,
+        #fab219 20%,
+        #ec835a 30%,
+        #d03b3b 40%,
+        #7e3bb5 60%,
+        #6b1f1f 100%
+    );
+}
+
+.wx-aqi-dot {
+    position: absolute;
+    top: 50%;
+    width: 13px;
+    height: 13px;
+    margin-inline-start: -6.5px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+.wx-aqi-scale {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- humidity / wind ---- */
 
 .wx-grid {
     display: grid;
@@ -226,6 +338,7 @@ a.gc-card:hover .gc-caption { color: var(--accent); }
     margin: 0;
     padding-top: 13px;
     border-top: 1px solid var(--rule);
+    text-align: start;
 }
 
 .wx-grid div { min-width: 0; }
@@ -414,4 +527,113 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
     .gc-viewer-panel { width: 100%; height: 100%; border-radius: 0; }
     .gc-viewer-title { font-size: 13.5px; }
     .gc-viewer-btn { padding: 6px 9px; font-size: 12px; }
+}
+
+/* --------------------------------------------------------------------------
+   SIDEBAR: PRAYER TIMES
+
+   Sits under the weather. A table of six rows, with the next prayer marked —
+   by a label and a tinted row, not by colour alone.
+   -------------------------------------------------------------------------- */
+
+.pr-next {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 11px;
+    margin-bottom: 10px;
+    background: var(--wash);
+    border-inline-start: 3px solid var(--accent);
+}
+.pr-next[hidden] { display: none; }
+
+.pr-next-name { font-size: 13.5px; font-weight: 700; }
+.pr-next-left {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+}
+
+.pr-list { list-style: none; margin: 0; padding: 0; }
+
+.pr-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13.5px;
+}
+.pr-row:last-child { border-bottom: 0; }
+
+.pr-name { font-weight: 600; }
+
+.pr-time {
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* The next prayer is named in the banner above as well, so this is support
+   rather than the only signal. */
+.pr-row.is-next {
+    background: var(--wash);
+    margin-inline: -6px;
+    padding-inline: 12px;
+}
+.pr-row.is-next .pr-name { color: var(--accent); }
+.pr-row.is-next .pr-time { color: var(--ink); font-weight: 600; }
+
+/* --------------------------------------------------------------------------
+   CONNECT CARD — fewer networks, fewer columns
+   -------------------------------------------------------------------------- */
+
+.connect-grid.connect-1 { grid-template-columns: 1fr; }
+.connect-grid.connect-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* --------------------------------------------------------------------------
+   LIGHT MASTHEAD
+
+   With the banner gone, the dark band above the menu was a wide empty stripe
+   with a small logo floating in it. White gives the logo its own space and
+   lets the red menu bar below carry the weight.
+
+   Done here rather than by changing --bar, because the footer uses the same
+   variable and stays dark on purpose.
+   -------------------------------------------------------------------------- */
+
+.topbar {
+    background: var(--paper);
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule);
+}
+
+.masthead {
+    background: var(--paper);
+    color: var(--ink);
+    border-top: 0;
+    /* Less air than the dark band needed — there is nothing beside the logo
+       now, so the old 28px top and bottom left it stranded. */
+    padding: 16px 0;
+}
+
+.masthead .brand-name,
+.masthead .brand-name a { color: var(--ink); }
+.masthead .brand-name a:hover { color: var(--accent); }
+.brand-tag { color: var(--ink-soft); }
+
+/* The social icons keep their own brand colours; only the hairline between
+   them and the date needs to change for a light background. */
+.topbar .clock { color: var(--ink-soft); }
+
+/* The weather and stock readings sat on a dark strip. */
+.tw { color: var(--ink-soft); }
+.tw strong { color: var(--ink); }
+.tw + .tw { border-inline-start-color: var(--rule); }
+
+@media (max-width: 620px) {
+    .masthead { padding: 13px 0; }
 }

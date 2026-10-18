@@ -76,7 +76,13 @@
             @endif
         </div>
 
-        @include('partials.ad', ['placement' => 'header'])
+        {{-- Corrections 3 and 5: no advertising on the site for now. The
+             Ads module and this slot both stay — switching it back on is
+             Site settings → Appearance → "Show the masthead banner", so
+             nothing has to be rebuilt when the client sells one. --}}
+        @if (($settings['show_header_ad'] ?? '0') === '1')
+            @include('partials.ad', ['placement' => 'header'])
+        @endif
     </div>
 </header>
 

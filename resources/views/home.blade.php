@@ -44,6 +44,7 @@
                  until it has something to show. --}}
             @include('partials.widget-stock')
             @include('partials.widget-weather')
+            @include('partials.widget-prayer')
 
             @include('partials.widget-author')
 

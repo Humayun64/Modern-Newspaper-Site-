@@ -42,7 +42,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;600;700&display=swap" rel="stylesheet">
+    {{-- Noto Sans Bengali reads far better at small sizes than Hind
+         Siliguri, and its Bangla numerals are the reason for the change:
+         ১ and ২ were being misread in dates and counts. --}}
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ \App\Support\Asset::versioned('css/site.css') }}">
 

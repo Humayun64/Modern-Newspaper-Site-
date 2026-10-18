@@ -117,6 +117,22 @@
             </div>
         </x-filament::section>
 
+        {{-- ---------------- advertising ---------------- --}}
+        <x-filament::section>
+            <x-slot name="heading">Advertising</x-slot>
+            <x-slot name="description">
+                The client asked for no advertising for launch. The Ads module is still here —
+                this only controls whether the masthead banner is drawn.
+            </x-slot>
+
+            <label style="display:inline-flex;align-items:center;gap:8px;font-size:.875rem;font-weight:600">
+                <input type="hidden" name="show_header_ad" value="0">
+                <input type="checkbox" name="show_header_ad" value="1"
+                       @checked(old('show_header_ad', $settings['show_header_ad'] ?? '0') === '1')>
+                Show the masthead banner
+            </label>
+        </x-filament::section>
+
         {{-- ---------------- editorial ---------------- --}}
         <x-filament::section>
             <x-slot name="heading">Editorial</x-slot>
@@ -221,6 +237,35 @@
                                                value="{{ old('weather_lon', $settings['weather_lon'] ?? '') }}" />
                         </x-filament::input.wrapper>
                         <span style="font-size:.78rem;opacity:.65">Leave all three empty for Dhaka.</span>
+                    </label>
+                </div>
+
+                <label style="display:inline-flex;align-items:center;gap:8px;font-size:.875rem;font-weight:600">
+                    <input type="hidden" name="prayer_enabled" value="0">
+                    <input type="checkbox" name="prayer_enabled" value="1"
+                           @checked(old('prayer_enabled', $settings['prayer_enabled'] ?? '1') === '1')>
+                    Show prayer times
+                </label>
+
+                <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">Prayer-times city</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="text" name="prayer_city" placeholder="ঢাকা"
+                                               value="{{ old('prayer_city', $settings['prayer_city'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                        <span style="font-size:.78rem;opacity:.65">Empty uses the weather city.</span>
+                    </label>
+
+                    <label style="display:grid;gap:.35rem">
+                        <span style="font-weight:600;font-size:.875rem">Calculation method</span>
+                        <x-filament::input.wrapper>
+                            <x-filament::input type="number" name="prayer_method" min="0" max="23" placeholder="1"
+                                               value="{{ old('prayer_method', $settings['prayer_method'] ?? '') }}" />
+                        </x-filament::input.wrapper>
+                        <span style="font-size:.78rem;opacity:.65">
+                            1 = Karachi, the one normally used in Bangladesh. 3 = Muslim World League.
+                        </span>
                     </label>
                 </div>
 

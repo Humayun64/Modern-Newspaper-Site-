@@ -26,6 +26,10 @@ class SettingsController extends Controller
         'widgets' => [
             'dse_index', 'dse_change', 'dse_as_of', 'stock_embed',
             'weather_enabled', 'weather_city', 'weather_lat', 'weather_lon',
+            'prayer_enabled', 'prayer_city', 'prayer_method',
+        ],
+        'ads' => [
+            'show_header_ad',
         ],
         'appearance' => [
             'color_accent', 'color_accent_dk', 'color_header_bg', 'color_nav_bg',
@@ -75,6 +79,8 @@ class SettingsController extends Controller
             'weather_city'     => ['nullable', 'string', 'max:60'],
             'weather_lat'      => ['nullable', 'numeric', 'between:-90,90'],
             'weather_lon'      => ['nullable', 'numeric', 'between:-180,180'],
+            'prayer_city'      => ['nullable', 'string', 'max:60'],
+            'prayer_method'    => ['nullable', 'integer', 'between:0,23'],
             'color_accent'     => $hex,
             'color_accent_dk'  => $hex,
             'color_header_bg'  => $hex,
