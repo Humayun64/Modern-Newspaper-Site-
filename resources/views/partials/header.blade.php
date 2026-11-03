@@ -76,6 +76,23 @@
             @endif
         </div>
 
+        {{-- Correction 16: the masthead is logo on the left, search on the
+             right. It was a small icon tucked into the menu bar, which is
+             easy to miss; this is the shape readers expect.
+
+             It is a plain GET form, so it works with JavaScript off and the
+             browser's own history and autocomplete apply. --}}
+        <form class="masthead-search" action="{{ route('search') }}" method="get" role="search">
+            <input type="search" name="q" value="{{ request('q') }}"
+                   placeholder="খবর খুঁজুন…" aria-label="সার্চ">
+            <button type="submit" aria-label="খুঁজুন">
+                <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5 L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </form>
+
         {{-- Corrections 3 and 5: no advertising on the site for now. The
              Ads module and this slot both stay — switching it back on is
              Site settings → Appearance → "Show the masthead banner", so
@@ -94,8 +111,10 @@
             @include('partials.nav-items', ['items' => $navItems])
         </ul>
 
-        {{-- Client correction 11 fixes this order:
-             সাম্প্রতিক → Latest Video → search → language. --}}
+        {{-- Client correction 11 fixed this order: সাম্প্রতিক → Latest
+             Video → search → language. Search has since moved up into the
+             masthead, so what is left here is the first two and the
+             language switcher, in the same order. --}}
         <div class="nav-actions">
             @if ($latestText !== '')
                 <a class="nav-latest" href="{{ $latestUrl }}">
@@ -117,19 +136,15 @@
                 <a class="nav-cta" href="{{ $ctaUrl }}">{{ $ctaText }}</a>
             @endif
 
-            <button class="nav-search" type="button" data-search-toggle aria-label="Search">&#9906;</button>
-
             {{-- Client correction 19: a proper dropdown rather than a bare
                  select. Google's own gadget stays mounted off-screen and is
                  driven from here — it cannot be styled to match anything. --}}
             <div class="lang-switch" translate="no">
                 <button class="lang-btn" type="button" data-lang-toggle
                         aria-expanded="false" aria-haspopup="true" aria-label="ভাষা নির্বাচন করুন">
-                    <svg class="lang-globe" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/>
-                        <ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M3.3 9h17.4M3.3 15h17.4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
+                    {{-- Correction 17: the word, not the globe. A globe on
+                         its own does not say what the button does. --}}
+                    <span class="lang-word">Translate</span>
                     <span class="lang-current" data-lang-label>{{ $languages['bn'] }}</span>
                     <span class="lang-caret" aria-hidden="true"></span>
                 </button>
@@ -148,14 +163,9 @@
     </div>
 </nav>
 
-<div class="search-bar" id="site-search">
-    <div class="wrap">
-        <form action="{{ route('search') }}" method="get" role="search">
-            <input type="search" name="q" value="{{ request('q') }}" placeholder="যা খুঁজছেন লিখুন…" aria-label="Search">
-            <button type="submit">খুঁজুন</button>
-        </form>
-    </div>
-</div>
+{{-- Correction: the magnifier in the menu bar is gone. The search box
+     in the masthead does the same job in plain sight, and two searches on
+     one page is one too many. The drop-down bar it opened went with it. --}}
 
 {{-- Mount point for Google's widget. Kept off-screen rather than display:none,
      because Google will not build its control inside a hidden element. --}}

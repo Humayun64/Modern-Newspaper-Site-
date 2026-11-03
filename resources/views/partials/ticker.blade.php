@@ -26,7 +26,10 @@
             ->stillBreaking($breakingHours)
             ->orderByDesc('breaking_since')
             ->latestFirst()
-            ->limit(8)
+            // Correction 2: no more than four at a time. The strip scrolls,
+            // so a long list means a reader waits to see the fourth one come
+            // round again — four is what they can actually follow.
+            ->limit(4)
             ->get(['id', 'title', 'slug', 'featured_image'])
             ->map(fn ($p) => [
                 'title' => $p->title,

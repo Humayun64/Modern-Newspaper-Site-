@@ -637,3 +637,300 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
 @media (max-width: 620px) {
     .masthead { padding: 13px 0; }
 }
+
+/* ==========================================================================
+   SECOND ROUND OF CLIENT CORRECTIONS
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   16 — SEARCH IN THE MASTHEAD
+
+   Logo on the left, search on the right. The masthead had nothing on its
+   right since the banner came out, and the old search was a 16px glyph in
+   the menu bar that people were not finding.
+   -------------------------------------------------------------------------- */
+
+.masthead-search {
+    display: flex;
+    align-items: stretch;
+    width: min(360px, 100%);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--paper);
+}
+
+.masthead-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    padding: 10px 14px;
+    font-family: var(--sans);
+    font-size: 14.5px;
+    color: var(--ink);
+    background: transparent;
+}
+.masthead-search input::placeholder { color: var(--ink-soft); }
+.masthead-search input:focus { outline: 0; }
+
+/* The ring goes on the whole control, not the bare input, so the focus
+   outline follows the shape the reader sees. */
+.masthead-search:focus-within { border-color: var(--accent); }
+
+.masthead-search button {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+}
+.masthead-search button:hover { background: var(--accent-dk); }
+
+/* --------------------------------------------------------------------------
+   3 — A THICKER MENU BAR
+
+   The black bar had thinned out once the masthead above it went white.
+   -------------------------------------------------------------------------- */
+
+.nav-links a { padding: 19px 14px; font-size: 15px; }
+.nav-latest, .nav-cta { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   4 and 9 — NO TEXT OVER A PHOTO
+
+   The lead card, the editor's-pick cards and the slider all printed the
+   headline across the bottom of the picture. On a dark photo it was
+   unreadable, and on a busy one it was worse.
+
+   These three bodies are already siblings of the image in the markup, so
+   taking them out of position drops them underneath it — no template
+   changes, and putting it back is deleting this block.
+   -------------------------------------------------------------------------- */
+
+.lead,
+.overlay-card,
+.slide { position: static; }
+
+.lead-body,
+.overlay-body,
+.slide-body {
+    position: static;
+    background: none;
+    color: var(--ink);
+    padding: 11px 0 0;
+}
+
+.lead-body .card-title,
+.overlay-body .card-title,
+.slide-body .slide-title,
+.lead-body .card-title a,
+.overlay-body .card-title a,
+.slide-body .slide-title a { color: var(--ink); }
+
+.lead-body .card-title a:hover,
+.overlay-body .card-title a:hover,
+.slide-body .slide-title a:hover { color: var(--accent); }
+
+.lead-body .meta,
+.lead-body .meta span,
+.overlay-body .meta,
+.overlay-body .meta span,
+.slide-body .meta,
+.slide-body .meta span { color: var(--ink-soft); }
+
+/* Off the photo and a size that works as a heading rather than a caption. */
+.lead-body .card-title { font-size: 23px; line-height: 1.4; }
+.slide-title { font-size: 21px; }
+
+/* The category chip was the last text left sitting on the image. */
+.thumb-badges { display: none; }
+
+/* --------------------------------------------------------------------------
+   5 — HOMEPAGE CARDS: PICTURE LEFT, HEADLINE RIGHT
+
+   Only in the main column of the homepage. Category and search pages keep
+   their grid of upright cards, where the picture is doing the browsing work
+   and a column of wide cards would read as a very long list.
+   -------------------------------------------------------------------------- */
+
+.stack .block .card,
+.express .card {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.stack .block .card .thumb,
+.express .card .thumb { aspect-ratio: 4 / 3; }
+
+.stack .block .card .card-title,
+.express .card .card-title { margin-top: 0; font-size: 16.5px; }
+
+/* Two across rather than three or four: a wide card needs the room. */
+.stack .grid-3,
+.stack .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* --------------------------------------------------------------------------
+   10 — "আরও দেখুন" UNDER THE SECTION
+
+   It was tucked beside the heading, where it reads as part of the title.
+   At the foot of the block it is where a reader arrives having run out of
+   stories, which is when they want it.
+
+   Done by moving the link rather than by editing a dozen section templates;
+   :has() scopes it to blocks that actually have one. A browser without
+   :has() simply keeps it beside the heading — no layout breaks either way.
+   -------------------------------------------------------------------------- */
+
+.block:has(> .block-head > .block-more) {
+    position: relative;
+    padding-bottom: 48px;
+}
+
+/* site.css puts position:relative on the heading row; the link has to
+   resolve against the block, not the heading. */
+.block:has(> .block-head > .block-more) > .block-head { position: static; }
+
+.block:has(> .block-head > .block-more) > .block-head > .block-more {
+    position: absolute;
+    inset-inline: 16px;
+    bottom: 0;
+    padding: 13px 0;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--accent);
+}
+.block:has(> .block-head > .block-more) > .block-head > .block-more:hover {
+    background: var(--wash);
+}
+
+/* --------------------------------------------------------------------------
+   15 and 19 — BIGGER PICTURES IN THE SIDE LISTS
+
+   78px was a postage stamp, and the full-size photo was being squeezed into
+   it — slow to load and too small to read.
+   -------------------------------------------------------------------------- */
+
+.row-card,
+.rank-card { grid-template-columns: 104px minmax(0, 1fr); gap: 13px; }
+.row-card .card-title,
+.rank-card .card-title { font-size: 14.5px; }
+.row-card .media-flag { width: 28px; height: 28px; font-size: 12px; }
+
+/* --------------------------------------------------------------------------
+   21 — THE RED RULE UNDER A SECTION HEADING
+
+   Heavier, the way Al Jazeera mark their sections.
+   -------------------------------------------------------------------------- */
+
+.block-title {
+    font-size: 16px;
+    font-weight: 700;
+    padding-bottom: 11px;
+    border-bottom-width: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE
+
+   Every change above has to hold on a phone, which is where most of this
+   site is read.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 880px) {
+    .masthead .wrap { gap: 12px; }
+    .masthead-search { width: 100%; }
+    .nav-links a { padding: 15px 16px; }
+}
+
+@media (max-width: 620px) {
+    /* One card per row, picture still on the left but narrower so the
+       headline keeps enough width to break sensibly. */
+    .stack .grid-3,
+    .stack .grid-4 { grid-template-columns: 1fr; }
+
+    .stack .block .card,
+    .express .card { grid-template-columns: 116px minmax(0, 1fr); gap: 11px; }
+
+    .stack .block .card .card-title,
+    .express .card .card-title { font-size: 14.5px; }
+
+    .lead-body .card-title { font-size: 19px; }
+    .slide-title { font-size: 17px; }
+
+    .row-card,
+    .rank-card { grid-template-columns: 92px minmax(0, 1fr); }
+
+    .block:has(> .block-head > .block-more) { padding-bottom: 44px; }
+    .block:has(> .block-head > .block-more) > .block-head > .block-more { inset-inline: 12px; }
+}
+
+/* --------------------------------------------------------------------------
+   6 — THE ARTICLE PAGE: PICTURE, THEN HEADLINE, THEN STORY
+
+   The photo now opens the page, so it needs the spacing of an opening
+   element rather than something dropped in mid-column.
+   -------------------------------------------------------------------------- */
+
+.article > .article-figure:first-child { margin: 0 0 18px; }
+.article > .article-figure:first-child img { width: 100%; }
+
+/* --------------------------------------------------------------------------
+   17 — "Translate" instead of a globe
+
+   A globe does not say what the control does; the word does. It keeps the
+   switcher's translate="no", so it stays the same word in every language —
+   which is the point of a control that changes the language.
+   -------------------------------------------------------------------------- */
+
+.lang-word {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
+
+/* A word is wider than an icon, so the button needs a little less padding
+   to keep the bar from wrapping on a small laptop. */
+.lang-btn { padding: 0 12px; gap: 8px; }
+
+@media (max-width: 880px) {
+    /* On a phone the word stays and the language name goes — the word is
+       the part that tells a reader what the button is for. */
+    .lang-word { font-size: 12.5px; }
+    .lang-btn { padding: 0 10px; gap: 6px; }
+}
+
+/* --------------------------------------------------------------------------
+   13 — THE ARTICLE'S VIDEO
+
+   Sits where the lead picture would, at the width of the article column.
+   The embed keeps a 16:9 box so the page does not jump when the iframe
+   finishes loading.
+   -------------------------------------------------------------------------- */
+
+.post-video { margin: 0 0 20px; background: #000; }
+
+.post-video video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+}
+
+.post-video-embed {
+    position: relative;
+    aspect-ratio: 16 / 9;
+}
+.post-video-embed iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}

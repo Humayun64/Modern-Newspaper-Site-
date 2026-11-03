@@ -39,7 +39,8 @@ class RefreshHomepage extends Command
 
     /** How many articles each flag should cover. */
     protected array $quota = [
-        'is_breaking'     => 8,
+        // Correction 2: four, not eight.
+        'is_breaking'     => 4,
         'is_featured'     => 6,
         'is_editors_pick' => 5,
         'is_trending'     => 5,

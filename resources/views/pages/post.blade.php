@@ -18,6 +18,18 @@
     <div class="stack">
 
         <article class="article">
+            {{-- Correction 6: the picture comes first, then the headline,
+                 then the story. It used to sit below the byline, which put
+                 three blocks of text between the reader and the photograph. --}}
+            @if ($post->featured_image)
+                <figure class="article-figure">
+                    <img src="{{ $post->thumb }}" alt="{{ $post->title }}">
+                    @if ($post->image_caption || $post->image_credit)
+                        <figcaption>{{ $post->image_caption }}@if($post->image_credit) — {{ $post->image_credit }}@endif</figcaption>
+                    @endif
+                </figure>
+            @endif
+
             @if ($post->category)
                 <a href="{{ route('category.show', $post->category) }}" class="badge badge-pill">
                     <span class="badge-dot" aria-hidden="true"></span>{{ $post->category->name }}
@@ -48,22 +60,15 @@
                 <p class="sponsored-note">স্পন্সরড কনটেন্ট</p>
             @endif
 
-            @if ($post->featured_image)
-                <figure class="article-figure">
-                    <img src="{{ $post->thumb }}" alt="{{ $post->title }}">
-                    @if ($post->image_caption || $post->image_credit)
-                        <figcaption>{{ $post->image_caption }}@if($post->image_credit) — {{ $post->image_credit }}@endif</figcaption>
-                    @endif
-                </figure>
-            @endif
-
             {{-- Share above the article as well as below: most sharing happens
                  on the strength of the headline, before the story is read. --}}
             @include('partials.share')
 
-            @if ($post->type === 'video' && $post->video_url)
-                <p><a class="chip" href="{{ $post->video_url }}" rel="noopener">ভিডিওটি দেখুন</a></p>
-            @endif
+            {{-- Correction 13: the video plays on the page. Shown whenever
+                 the article has one, not only when its type says "video" —
+                 a reporter who pastes a link should not also have to
+                 remember a dropdown for it to appear. --}}
+            @include('partials.post-video')
 
             <div class="article-body">{!! $post->body !!}</div>
 

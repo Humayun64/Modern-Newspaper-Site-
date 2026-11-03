@@ -144,10 +144,22 @@ class PostForm
                                     ->native(false),
                             ]),
 
-                        Section::make('Featured image')
+                        /*
+                         * Correction 13: the video sits with the featured
+                         * image, because for the writer it is the same
+                         * decision — what picture or clip leads this story.
+                         *
+                         * Two ways in, and the link is the one to prefer:
+                         * YouTube and Facebook carry the bandwidth, adapt to
+                         * the reader's connection, and cost nothing. An
+                         * uploaded file is served by this host at full size
+                         * to every reader, which on a shared plan is slow and
+                         * eats the disk. The helper text says so.
+                         */
+                        Section::make('Featured image and video')
                             ->schema([
                                 FileUpload::make('featured_image')
-                                    ->label('')
+                                    ->label('Featured image')
                                     ->image()
                                     ->imageEditor()
                                     ->directory('posts')
@@ -160,6 +172,22 @@ class PostForm
                                 TextInput::make('image_credit')
                                     ->label('Credit')
                                     ->placeholder('Collected'),
+
+                                TextInput::make('video_url')
+                                    ->label('Video link')
+                                    ->url()
+                                    ->helperText('YouTube or Facebook. Preferred — it plays faster and costs nothing.')
+                                    ->placeholder('https://www.youtube.com/watch?v=…'),
+
+                                FileUpload::make('video_file')
+                                    ->label('Or upload a video')
+                                    ->directory('posts/video')
+                                    ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/quicktime'])
+                                    // 50 MB. The server's own upload limit may
+                                    // be lower; if a file is refused without a
+                                    // message, that is why.
+                                    ->maxSize(51200)
+                                    ->helperText('MP4 or WebM, up to 50 MB. Use only when there is no link.'),
                             ]),
 
                         Section::make('Post type')
@@ -176,12 +204,8 @@ class PostForm
                                     ->default('standard')
                                     ->required()
                                     ->live()
-                                    ->native(false),
-
-                                TextInput::make('video_url')
-                                    ->label('Video URL')
-                                    ->url()
-                                    ->visible(fn ($get) => $get('type') === 'video'),
+                                    ->native(false)
+                                    ->helperText('Set this to Video to list the story under সর্বশেষ ভিডিও.'),
 
                                 TextInput::make('audio_url')
                                     ->label('Audio URL')

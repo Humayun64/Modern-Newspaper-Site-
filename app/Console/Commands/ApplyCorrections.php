@@ -31,10 +31,15 @@ class ApplyCorrections extends Command
     /** Correction 18: who the editorial card is about. */
     protected array $settings = [
         'editor_name'       => 'ইঞ্জিনিয়ার শফিকুল ইসলাম',
-        'editor_role'       => 'প্রতিষ্ঠাতা ও স্বত্বাধিকারী, আমারদেশ২৪.নিউজ',
+        // Correction 18 (second pass): "সম্পাদক" replaces "স্বত্বাধিকারী".
+        'editor_role'       => 'প্রতিষ্ঠাতা ও সম্পাদক, আমারদেশ২৪.নিউজ',
         'editor_bio'        => 'সত্য, নিরপেক্ষতা ও বস্তুনিষ্ঠ সাংবাদিকতার অঙ্গীকার নিয়ে পাঠকদের কাছে নির্ভরযোগ্য সংবাদ পৌঁছে দেওয়াই আমাদের লক্ষ্য।',
         // Correction 22, the sidebar card.
         'editorial_heading' => 'পরিচালকের পরিচিতি',
+        // Advertising stays off until the client has something to put there.
+        // The toggle is still in Site settings → Advertising, so turning it
+        // back on later is a tick rather than a deploy.
+        'show_header_ad'    => '0',
     ];
 
     /** Correction 22: the homepage block. [old title => new title] */
@@ -51,6 +56,7 @@ class ApplyCorrections extends Command
 
         $this->applySettings($dry, $force);
         $this->renameSections($dry);
+        $this->orderSections($dry);
         $this->recolourBanner($dry, $force);
 
         if (! $dry) {
@@ -111,6 +117,78 @@ class ApplyCorrections extends Command
                 $this->line('  + "'.$from.'" → "'.$to.'"');
             }
         }
+    }
+
+    /**
+     * Correction 7: "নির্বাচিত সংবাদ" belongs directly after "জাতীয়".
+     *
+     * Sections are ordered by sort_order, so this renumbers the whole list
+     * with the one moved into place. Renumbering everything rather than
+     * nudging one value keeps the numbers tidy and avoids two sections
+     * sharing a position, which is where the order goes random.
+     */
+    protected function orderSections(bool $dry): void
+    {
+        $this->line('');
+        $this->line('Homepage section order (7)…');
+
+        $sections = HomeSection::orderBy('sort_order')->orderBy('id')->get();
+
+        $moving = $sections->first(fn ($s) => $this->isTitled($s, 'নির্বাচিত সংবাদ'));
+        $anchor = $sections->first(fn ($s) => $this->isTitled($s, 'জাতীয়'));
+
+        if (! $moving) {
+            $this->line('  · no "নির্বাচিত সংবাদ" section — nothing to move');
+
+            return;
+        }
+
+        if (! $anchor) {
+            $this->line('  · no "জাতীয়" section to put it after — left where it is');
+
+            return;
+        }
+
+        if ($moving->id === $anchor->id) {
+            return;
+        }
+
+        // Rebuild the list with the section lifted out and dropped back in
+        // directly after its anchor.
+        $ordered = $sections->reject(fn ($s) => $s->id === $moving->id)->values();
+        $at      = $ordered->search(fn ($s) => $s->id === $anchor->id);
+
+        $ordered->splice($at + 1, 0, [$moving]);
+
+        if ($dry) {
+            $this->line('  + would reorder to:');
+            foreach ($ordered as $i => $s) {
+                $this->line('      '.($i + 1).'. '.($s->title ?: $s->layout));
+            }
+
+            return;
+        }
+
+        foreach ($ordered as $i => $section) {
+            if ((int) $section->sort_order !== $i + 1) {
+                $section->update(['sort_order' => $i + 1]);
+            }
+        }
+
+        $this->line('  + "নির্বাচিত সংবাদ" now sits after "জাতীয়".');
+
+        foreach ($ordered as $i => $s) {
+            $this->line('      '.($i + 1).'. '.($s->title ?: $s->layout));
+        }
+    }
+
+    /** Title match that ignores the zero-width characters Bangla collects. */
+    protected function isTitled(HomeSection $section, string $wanted): bool
+    {
+        $clean = fn ($t) => trim(preg_replace('/\s+/u', ' ',
+            preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', (string) $t)));
+
+        return $clean($section->title) === $clean($wanted);
     }
 
     /**

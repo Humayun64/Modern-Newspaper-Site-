@@ -134,8 +134,47 @@
             var track = document.getElementById(id);
             if (!track) return;
             track.scrollBy({ left: btn.dataset.sliderNext ? track.clientWidth : -track.clientWidth, behavior: 'smooth' });
+            track.dataset.held = '1';   // a reader took over; stop advancing
         });
     });
+
+    /*
+     * Correction 8: the slider moves on its own.
+     *
+     * It stops the moment the reader does anything with it — hover, touch,
+     * arrows, or scrolling it by hand — and does not start again. A carousel
+     * that slides away mid-sentence is worse than one that never moved.
+     *
+     * It also stays still for anyone who has asked their system to reduce
+     * motion, and while the tab is in the background.
+     */
+    (function () {
+        var tracks = document.querySelectorAll('.slider-track');
+        if (!tracks.length) return;
+
+        var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (still) return;
+
+        tracks.forEach(function (track) {
+            ['mouseenter', 'touchstart', 'wheel', 'focusin'].forEach(function (evt) {
+                track.addEventListener(evt, function () { track.dataset.held = '1'; }, { passive: true });
+            });
+
+            setInterval(function () {
+                if (track.dataset.held === '1') return;
+                if (document.hidden) return;
+                if (track.scrollWidth <= track.clientWidth) return;
+
+                // Within a pixel of the end? Go back to the first slide.
+                var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+
+                track.scrollTo({
+                    left: atEnd ? 0 : track.scrollLeft + track.clientWidth,
+                    behavior: 'smooth'
+                });
+            }, 6000);
+        });
+    })();
 
     // copy link
     document.querySelector('[data-copy]')?.addEventListener('click', function () {
