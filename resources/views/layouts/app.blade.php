@@ -134,7 +134,16 @@
             var track = document.getElementById(id);
             if (!track) return;
             track.scrollBy({ left: btn.dataset.sliderNext ? track.clientWidth : -track.clientWidth, behavior: 'smooth' });
-            track.dataset.held = '1';   // a reader took over; stop advancing
+
+            if (track.closest('.mn-slider')) {
+                // The hero carousel is meant to keep moving. An arrow press
+                // buys the reader a quiet minute, not a dead carousel.
+                track.dataset.paused = '1';
+                clearTimeout(track._resume);
+                track._resume = setTimeout(function () { track.dataset.paused = '0'; }, 12000);
+            } else {
+                track.dataset.held = '1';   // a reader took over; stop advancing
+            }
         });
     });
 
@@ -156,12 +165,34 @@
         if (still) return;
 
         tracks.forEach(function (track) {
-            ['mouseenter', 'touchstart', 'wheel', 'focusin'].forEach(function (evt) {
-                track.addEventListener(evt, function () { track.dataset.held = '1'; }, { passive: true });
-            });
+            /*
+             * Two kinds of carousel, two habits.
+             *
+             * The hero at the top of প্রধান সংবাদ is meant to keep moving.
+             * It is the first thing on the page and a pointer crosses it by
+             * accident constantly, so hovering only PAUSES it and leaving
+             * starts it again.
+             *
+             * The smaller sliders further down keep the older rule: any
+             * contact stops them for good, because by the time a reader is
+             * down there they are reading, not browsing.
+             */
+            if (track.closest('.mn-slider')) {
+                ['mouseenter', 'focusin'].forEach(function (evt) {
+                    track.addEventListener(evt, function () { track.dataset.paused = '1'; }, { passive: true });
+                });
+                ['mouseleave', 'focusout'].forEach(function (evt) {
+                    track.addEventListener(evt, function () { track.dataset.paused = '0'; }, { passive: true });
+                });
+            } else {
+                ['mouseenter', 'touchstart', 'wheel', 'focusin'].forEach(function (evt) {
+                    track.addEventListener(evt, function () { track.dataset.held = '1'; }, { passive: true });
+                });
+            }
 
             setInterval(function () {
                 if (track.dataset.held === '1') return;
+                if (track.dataset.paused === '1') return;
                 if (document.hidden) return;
                 if (track.scrollWidth <= track.clientWidth) return;
 

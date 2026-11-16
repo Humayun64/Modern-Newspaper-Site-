@@ -31,7 +31,7 @@
                     <p>ইমেইল: {{ $settings['site_email'] }}</p>
                 @endif
                 @if ($settings['site_address'] ?? null)
-                    <p>{{ $settings['site_address'] }}</p>
+                    <p>ঠিকানা: {{ $settings['site_address'] }}</p>
                 @endif
             </div>
 

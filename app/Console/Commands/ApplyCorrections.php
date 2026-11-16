@@ -32,14 +32,10 @@ class ApplyCorrections extends Command
     protected array $settings = [
         'editor_name'       => 'ইঞ্জিনিয়ার শফিকুল ইসলাম',
         // Correction 18 (second pass): "সম্পাদক" replaces "স্বত্বাধিকারী".
-        'editor_role'       => 'প্রতিষ্ঠাতা ও সম্পাদক, আমারদেশ২৪.নিউজ',
+        'editor_role'       => 'প্রতিষ্ঠাতা',
         'editor_bio'        => 'সত্য, নিরপেক্ষতা ও বস্তুনিষ্ঠ সাংবাদিকতার অঙ্গীকার নিয়ে পাঠকদের কাছে নির্ভরযোগ্য সংবাদ পৌঁছে দেওয়াই আমাদের লক্ষ্য।',
         // Correction 22, the sidebar card.
         'editorial_heading' => 'পরিচালকের পরিচিতি',
-        // Advertising stays off until the client has something to put there.
-        // The toggle is still in Site settings → Advertising, so turning it
-        // back on later is a tick rather than a deploy.
-        'show_header_ad'    => '0',
     ];
 
     /** Correction 22: the homepage block. [old title => new title] */

@@ -934,3 +934,195 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
     height: 100%;
     border: 0;
 }
+
+/* --------------------------------------------------------------------------
+   প্রধান সংবাদ — the lead block as a carousel
+   --------------------------------------------------------------------------
+   The markup is the site's ordinary slider, so autoplay and the arrow
+   buttons already work. What is different here is that one story fills the
+   width instead of two or three sitting side by side, and the arrows ride
+   on the picture rather than in the heading.
+
+   The picture is given an explicit 16:9 box. That is not decoration: the
+   arrow overlay is positioned against the same ratio, so the two line up
+   whatever shape the photograph arrives in — and the block stops jumping
+   as each image loads.
+   -------------------------------------------------------------------------- */
+
+.mn-slider { position: relative; }
+
+.mn-slider .slider-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.mn-slider .slider-track::-webkit-scrollbar { display: none; }
+
+.mn-slider .slide {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+}
+
+.mn-slider .slide > .thumb {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 6px;
+}
+.mn-slider .slide > .thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Covers the picture only, never the headline underneath it. */
+.mn-nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    pointer-events: none;
+}
+
+.mn-arrow {
+    pointer-events: auto;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(17, 17, 17, .55);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+.mn-arrow:hover,
+.mn-arrow:focus-visible { background: rgba(200, 16, 46, .92); }
+
+.mn-rest { margin-top: 16px; }
+
+@media (max-width: 640px) {
+    .mn-nav { padding: 0 6px; }
+    .mn-arrow { width: 32px; height: 32px; font-size: 20px; }
+}
+
+/* --------------------------------------------------------------------------
+   23 — A TALLER MENU BAR, AND A LIVE DOT THAT LOOKS LIVE
+   --------------------------------------------------------------------------
+   The black bar grows again, and everything in it grows with it: the links,
+   the সাম্প্রতিক control and the red সর্বশেষ ভিডিও block all take the same
+   vertical padding, so the red block still reaches the full height of the
+   bar instead of floating inside it.
+   -------------------------------------------------------------------------- */
+
+.nav-links a { padding: 25px 14px; }
+
+.nav-latest,
+.nav-cta {
+    display: inline-flex;
+    align-items: center;
+    padding-top: 25px;
+    padding-bottom: 25px;
+}
+
+/* The dot that says সাম্প্রতিক is live.
+   It pulses rather than blinks: a ring that grows and fades reads as a
+   signal, where an on/off blink reads as a fault. Anyone who has asked
+   their system for reduced motion gets a plain dot. */
+.nav-latest-dot {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: #e02424;
+    box-shadow: 0 0 0 0 rgba(224, 36, 36, .65);
+    animation: navLatestPulse 1.9s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+
+@keyframes navLatestPulse {
+    0%   { box-shadow: 0 0 0 0   rgba(224, 36, 36, .65); }
+    70%  { box-shadow: 0 0 0 12px rgba(224, 36, 36, 0); }
+    100% { box-shadow: 0 0 0 0   rgba(224, 36, 36, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav-latest-dot { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   25 — A HEAVIER RED RULE UNDER প্রধান সংবাদ ONLY
+
+   Every other section keeps the 4px rule from the last round. Weight is
+   how a page says which block matters most, and if every heading is heavy
+   then none of them is.
+   -------------------------------------------------------------------------- */
+
+.block-main > .block-head > .block-title { border-bottom-width: 7px; }
+
+@media (max-width: 880px) {
+    .nav-links a { padding: 15px 16px; }
+    .nav-latest,
+    .nav-cta { padding-top: 15px; padding-bottom: 15px; }
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE OVERFLOW — the page was 35px wider than the phone
+   --------------------------------------------------------------------------
+   `grid-template-columns: 1fr` means `minmax(auto, 1fr)`, and `auto` as a
+   minimum is the content's min-content width: the column refuses to shrink
+   below the longest unbreakable thing inside it. One long headline in the
+   সংবাদ স্লাইডার was enough to push the whole page past the screen, which
+   is what produced the sideways scroll and the blank strip down the right.
+
+   `minmax(0, 1fr)` lets the column shrink and leaves the clipping to the
+   elements that are built to clip. Everywhere else in site.css the author
+   already wrote it this way; these are the few places that were missed.
+   -------------------------------------------------------------------------- */
+
+.stack { grid-template-columns: minmax(0, 1fr); }
+
+@media (max-width: 1040px) {
+    .body-row { grid-template-columns: minmax(0, 1fr) 300px; }
+}
+
+@media (max-width: 880px) {
+    .body-row,
+    .express { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 620px) {
+    .hero-row,
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   MOBILE — less dead space at the top of every block
+
+   16px of padding above each heading is right on a desktop, where the page
+   is wide and the white space separates columns. On a phone it is 16px of
+   nothing repeated down the whole page, and it pushes the first headline of
+   each section below the fold.
+
+   4px rather than 0: at zero the heading's own line-box sits on the border
+   and the block reads as broken rather than tight.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+    .block { padding-top: 4px; }
+    .block-head { margin-bottom: 12px; }
+}

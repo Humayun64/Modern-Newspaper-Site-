@@ -18,17 +18,26 @@
     <div class="stack">
 
         <article class="article">
-            {{-- Correction 6: the picture comes first, then the headline,
-                 then the story. It used to sit below the byline, which put
-                 three blocks of text between the reader and the photograph. --}}
-            @if ($post->featured_image)
-                <figure class="article-figure">
-                    <img src="{{ $post->thumb }}" alt="{{ $post->title }}">
-                    @if ($post->image_caption || $post->image_credit)
-                        <figcaption>{{ $post->image_caption }}@if($post->image_credit) — {{ $post->image_credit }}@endif</figcaption>
-                    @endif
-                </figure>
-            @endif
+            {{--
+                The order of this page, as asked for:
+
+                    category → headline → picture →
+                    share → byline → story
+
+                The headline now leads, which is how a reader decides whether
+                to stay; the picture follows, and the sharing buttons sit
+                directly under it, where a reader who was convinced by the
+                headline alone will act. The byline comes last before the
+                story, close to the text it belongs to.
+
+                The summary is NOT printed here. Almost every article on this
+                site was imported with its excerpt taken from the opening of
+                the story, so printing it put the same paragraph on the page
+                twice — once above the photograph and again below it. It is
+                still doing its work out of sight: the meta description for
+                search engines, the preview on social media, and the line
+                under each headline in the homepage lists.
+            --}}
 
             @if ($post->category)
                 <a href="{{ route('category.show', $post->category) }}" class="badge badge-pill">
@@ -38,9 +47,22 @@
 
             <h1 class="article-title">{{ $post->title }}</h1>
 
-            @if ($post->excerpt)
-                <p class="article-standfirst">{{ $post->excerpt }}</p>
+            @if ($post->featured_image)
+                <figure class="article-figure">
+                    <img src="{{ $post->thumb }}" alt="{{ $post->title }}">
+                    @if ($post->image_caption || $post->image_credit)
+                        <figcaption>{{ $post->image_caption }}@if($post->image_credit) — {{ $post->image_credit }}@endif</figcaption>
+                    @endif
+                </figure>
             @endif
+
+            {{-- Correction 13: the video plays on the page. Shown whenever
+                 the article has one, not only when its type says "video" —
+                 a reporter who pastes a link should not also have to
+                 remember a dropdown for it to appear. --}}
+            @include('partials.post-video')
+
+            @include('partials.share')
 
             <div class="article-meta">
                 @if ($post->author)
@@ -59,16 +81,6 @@
             @if ($post->is_sponsored)
                 <p class="sponsored-note">স্পন্সরড কনটেন্ট</p>
             @endif
-
-            {{-- Share above the article as well as below: most sharing happens
-                 on the strength of the headline, before the story is read. --}}
-            @include('partials.share')
-
-            {{-- Correction 13: the video plays on the page. Shown whenever
-                 the article has one, not only when its type says "video" —
-                 a reporter who pastes a link should not also have to
-                 remember a dropdown for it to appear. --}}
-            @include('partials.post-video')
 
             <div class="article-body">{!! $post->body !!}</div>
 

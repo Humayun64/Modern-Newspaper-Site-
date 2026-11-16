@@ -1,73 +1,65 @@
-# Keep video stories out of the news listings
-
-Four files. No migration, no CSS.
+# Three small ones
 
 ```
-app/Support/VideoContent.php          (new)
-app/Models/HomeSection.php            (replaced)
-app/Http/Controllers/HomeController.php (replaced)
-resources/views/partials/ticker.blade.php (replaced)
+public/css/widgets.css                        (replaced)
+resources/views/home.blade.php                (replaced)
+app/Console/Commands/ApplyCorrections.php     (replaced)
 ```
 
-Install batch 21 first if you have not — this builds on its ticker.
+No migration. Install batch 28 first.
 
 ---
 
-## What it does
+## 1. The white space at the top of each block — phones only
 
-Video stories no longer appear in:
+16px of padding above every heading became 4px, and the gap under the
+heading 16px → 12px.
 
-- the **ব্রেকিং** strip
-- the **সর্বশেষ** sidebar list
-- the **জনপ্রিয়** tab
-- any other homepage section
+Not zero: at zero the heading's own line sits on the block's border and it
+reads as broken rather than tight. Say the word and I will take the last
+4px off.
 
-They still appear, as before, on **সর্বশেষ ভিডিও** (`/video`), on the
-ভিডিও category page, and anywhere a section is pointed at a video
-category — filtering those would leave an empty block.
+Left as it was on desktop, where the white space is doing real work
+separating the columns — the crosses were on phone screenshots. Tell me if
+you want it there too.
 
-## What counts as a video story
+## 2. ট্রেন্ডিং moves to the top of the sidebar
 
-Either of these:
+Above পরিচালকের পরিচিতি, and above the stock, weather and prayer widgets
+as well. It is the only block in that column that changes with the news and
+the one most likely to be clicked, so it belongs above the fold.
 
-- the post's **Type** is Video, or
-- it is in a video category (primary or additional) — matched by the slug
-  `video`/`videos` or by any category name containing ভিডিও
+If you wanted it only above পরিচালকের পরিচিতি and still below the weather,
+say so — it is one line.
 
-**Having a video link is deliberately not enough.** An ordinary report can
-carry a clip of the scene without becoming a video story. If links counted,
-the news lists would quietly empty themselves as that habit spread.
+## 3. The founder's line
+
+"প্রতিষ্ঠাতা ও সম্পাদক, আমারদেশ২৪.নিউজ" → **"প্রতিষ্ঠাতা"**.
+
+This one is stored in the database, so copying the file is not enough — the
+command below writes it.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch22\amardesh24-batch22\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch29\amardesh24-batch29\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear && php artisan site:apply-corrections --force
 ```
 
-Open the homepage. The three demo videos should be gone from the strip and
-from সর্বশেষ, and still be there at `/video`.
+Ctrl+F5 afterwards.
+
+`--force` is needed: without it the command leaves a setting that is
+already filled alone, and this one is. It also re-applies the other settled
+corrections (section order, the header ad off, the banner colour) — all
+unchanged, so nothing moves.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Keep video stories out of the news listings" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Block padding on phones, trending to the top, founder line" && git push
 ```
 
 ```
-cd ~/apps/amardesh24 && git pull && php artisan optimize:clear
+cd ~/apps/amardesh24 && git pull && php artisan optimize:clear && php artisan site:apply-corrections --force
 ```
-
----
-
-## Two things to know
-
-**The category list is cached for an hour.** Make a new video category and
-it starts being excluded within the hour — or immediately after
-`php artisan optimize:clear`.
-
-**Two files were replaced, not edited:** `HomeSection.php` and
-`HomeController.php`. Neither has changed since 18 October, so nothing
-should be lost — but if you edited either by hand since then, tell me and
-I will merge instead.

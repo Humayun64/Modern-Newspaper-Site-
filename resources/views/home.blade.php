@@ -39,6 +39,18 @@
                  masthead banner are untouched, so nothing has to be rebuilt
                  if the client changes their mind. --}}
 
+            {{-- ট্রেন্ডিং leads the sidebar now. It is the only block here
+                 that changes with the news, and it is the one a reader is
+                 most likely to click — so it belongs above the fold rather
+                 than below three widgets that rarely change. --}}
+            @foreach ($sidebar as $section)
+                @includeIf('sections.'.$section['layout'], [
+                    'title'    => $section['title'],
+                    'category' => $section['category'],
+                    'posts'    => $section['posts'],
+                ])
+            @endforeach
+
             {{-- Correction 15: the stock index and the weather, in the
                  sidebar where the client wants them. Each draws nothing
                  until it has something to show. --}}
@@ -47,14 +59,6 @@
             @include('partials.widget-prayer')
 
             @include('partials.widget-author')
-
-            @foreach ($sidebar as $section)
-                @includeIf('sections.'.$section['layout'], [
-                    'title'    => $section['title'],
-                    'category' => $section['category'],
-                    'posts'    => $section['posts'],
-                ])
-            @endforeach
 
             @include('partials.widget-connect')
             @include('partials.widget-tags')
