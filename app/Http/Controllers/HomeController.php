@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HomeSection;
 use App\Models\Post;
+use App\Support\VideoContent;
 
 class HomeController extends Controller
 {
@@ -42,7 +43,10 @@ class HomeController extends Controller
                 array_merge($this->heroLayouts, $this->sidebarLayouts),
                 true
             )),
-            'popular' => Post::published()->forCards()->popular()->limit(4)->get(),
+            // Same rule as the sections and the strip: video stories live on
+            // their own page, not in the news lists.
+            'popular' => VideoContent::exclude(Post::published())
+                ->forCards()->popular()->limit(4)->get(),
         ]);
     }
 }

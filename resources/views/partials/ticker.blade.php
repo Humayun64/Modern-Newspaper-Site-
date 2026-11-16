@@ -6,11 +6,10 @@
      * to tick, nothing that expires. Publish a new article and it enters at
      * the front; the oldest of the four drops out on its own.
      *
-     * The "Breaking news" tick on the post screen no longer decides what
-     * appears here. It used to, together with a 24-hour window, and the
-     * result was a strip that vanished for a fortnight because nobody
-     * ticked anything. A strip the client has to feed by hand is a strip
-     * that is empty most of the time.
+     * Video stories are left out — they have their own page, সর্বশেষ ভিডিও,
+     * and the client does not want them taking slots here. App\Support\
+     * VideoContent holds that rule, shared with the homepage sections so
+     * the two listings cannot drift apart.
      *
      * How many it shows: the setting breaking_count, four by default.
      *
@@ -23,12 +22,14 @@
     $count = (int) (\App\Models\Setting::all_cached()['breaking_count'] ?? 4) ?: 4;
 
     $items = \Illuminate\Support\Facades\Cache::remember(
-        'ticker.latest.'.$count,
+        'ticker.latest.nv.'.$count,
         60,
-        fn () => \App\Models\Post::published()
+        fn () => \App\Support\VideoContent::exclude(
+                \App\Models\Post::published()
+            )
             ->latestFirst()
             ->limit($count)
-            ->get(['id', 'title', 'slug', 'featured_image'])
+            ->get(['id', 'title', 'slug', 'featured_image', 'type', 'category_id'])
             ->map(fn ($p) => [
                 'title' => $p->title,
                 'url'   => route('post.show', $p->slug),

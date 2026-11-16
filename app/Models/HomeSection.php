@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\VideoContent;
 use Illuminate\Database\Eloquent\Model;
 
 class HomeSection extends Model
@@ -29,6 +30,16 @@ class HomeSection extends Model
     public function resolvePosts()
     {
         $query = Post::query()->published()->forCards();
+
+        /*
+         * Video stories stay out of the news listings — they have their own
+         * page. The one exception is a section pointed AT a video category:
+         * there the videos are the whole point, and filtering them would
+         * leave an empty block.
+         */
+        if (! VideoContent::isVideoCategory($this->category_id)) {
+            $query = VideoContent::exclude($query);
+        }
 
         $query = match ($this->source) {
             'featured'     => $query->where('is_featured', true)->latestFirst(),

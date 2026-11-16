@@ -1,45 +1,59 @@
-# Breaking strip — always the four newest articles
+# Keep video stories out of the news listings
 
-One file: `resources/views/partials/ticker.blade.php`.
-No migration, no CSS, no settings row.
+Four files. No migration, no CSS.
 
-**This replaces batch 20. If you have not installed batch 20, skip it.**
+```
+app/Support/VideoContent.php          (new)
+app/Models/HomeSection.php            (replaced)
+app/Http/Controllers/HomeController.php (replaced)
+resources/views/partials/ticker.blade.php (replaced)
+```
+
+Install batch 21 first if you have not — this builds on its ticker.
 
 ---
 
-## The rule now
+## What it does
 
-The strip shows the **four newest published articles**. Always.
+Video stories no longer appear in:
 
-- Nothing to tick.
-- Nothing expires.
-- Publish a new article and it goes to the front; the oldest of the four
-  drops out by itself.
+- the **ব্রেকিং** strip
+- the **সর্বশেষ** sidebar list
+- the **জনপ্রিয়** tab
+- any other homepage section
 
-The 24-hour window is gone, and so is the "Breaking news" tick deciding
-what shows here. That tick still exists on the post screen but no longer
-affects the strip.
+They still appear, as before, on **সর্বশেষ ভিডিও** (`/video`), on the
+ভিডিও category page, and anywhere a section is pointed at a video
+category — filtering those would leave an empty block.
 
-To show a different number, set `breaking_count` in settings.
+## What counts as a video story
+
+Either of these:
+
+- the post's **Type** is Video, or
+- it is in a video category (primary or additional) — matched by the slug
+  `video`/`videos` or by any category name containing ভিডিও
+
+**Having a video link is deliberately not enough.** An ordinary report can
+carry a clip of the scene without becoming a video story. If links counted,
+the news lists would quietly empty themselves as that habit spread.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch21\amardesh24-batch21\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch22\amardesh24-batch22\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Open the homepage — the strip should be there with the four newest
-headlines.
+Open the homepage. The three demo videos should be gone from the strip and
+from সর্বশেষ, and still be there at `/video`.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Breaking strip: four newest articles" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Keep video stories out of the news listings" && git push
 ```
-
-On the server:
 
 ```
 cd ~/apps/amardesh24 && git pull && php artisan optimize:clear
@@ -47,24 +61,13 @@ cd ~/apps/amardesh24 && git pull && php artisan optimize:clear
 
 ---
 
-## Tidying up
+## Two things to know
 
-The four posts flagged breaking on 3 November still carry the flag in the
-admin list. They do nothing now, but if you want them cleared:
+**The category list is cached for an hour.** Make a new video category and
+it starts being excluded within the hour — or immediately after
+`php artisan optimize:clear`.
 
-```
-php artisan site:expire-breaking
-```
-
----
-
-## Still open
-
-The live site serves a `robots.txt` that blocks search engines, so Google
-is not indexing it. Check with:
-
-```
-grep -E 'APP_ENV|APP_DEBUG|APP_URL|APP_INDEXABLE' ~/apps/amardesh24/.env
-```
-
-Send me the output and I will give you the exact line to change.
+**Two files were replaced, not edited:** `HomeSection.php` and
+`HomeController.php`. Neither has changed since 18 October, so nothing
+should be lost — but if you edited either by hand since then, tell me and
+I will merge instead.
