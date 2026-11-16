@@ -46,47 +46,47 @@ class SeoAnalyzer
         // ---- the keyphrase ------------------------------------------------
 
         if ($phrase === '') {
-            $checks[] = self::check(self::PROBLEM, 3, 'ফোকাস কিওয়ার্ড',
-                'কোনো ফোকাস কিওয়ার্ড দেওয়া হয়নি। যে শব্দে পাঠক এই খবরটি খুঁজবে সেটি লিখুন — তারপর বাকি পরীক্ষাগুলো সেটির সাথে মিলিয়ে দেখা হবে।');
+            $checks[] = self::check(self::PROBLEM, 3, 'Focus keyphrase',
+                'No focus keyphrase set. Add the words a reader would type into Google to find this story, and the rest of the checks can be measured against it.');
         } else {
-            $checks[] = self::check(self::GOOD, 3, 'ফোকাস কিওয়ার্ড',
-                '“'.$phrase.'” — এটি ধরে বাকি পরীক্ষাগুলো করা হয়েছে।');
+            $checks[] = self::check(self::GOOD, 3, 'Focus keyphrase',
+                '“'.$phrase.'” — the rest of the checks are measured against this.');
 
             $checks[] = self::has($title, $phrase)
-                ? self::check(self::GOOD, 3, 'শিরোনামে কিওয়ার্ড', 'শিরোনামে কিওয়ার্ডটি আছে।')
-                : self::check(self::PROBLEM, 3, 'শিরোনামে কিওয়ার্ড',
-                    'শিরোনামে কিওয়ার্ডটি নেই। শিরোনামই সবচেয়ে বেশি ওজন বহন করে — শুরুর দিকে রাখতে পারলে ভালো।');
+                ? self::check(self::GOOD, 3, 'Keyphrase in the headline', 'The headline contains the keyphrase.')
+                : self::check(self::PROBLEM, 3, 'Keyphrase in the headline',
+                    'The headline does not contain the keyphrase. The headline carries more weight than anything else, and earlier in it is better.');
 
             $opening = Str::limit($text, 250, '');
             $checks[] = self::has($opening, $phrase)
-                ? self::check(self::GOOD, 2, 'শুরুতে কিওয়ার্ড', 'লেখার প্রথম অংশেই কিওয়ার্ডটি এসেছে।')
-                : self::check(self::IMPROVEMENT, 2, 'শুরুতে কিওয়ার্ড',
-                    'প্রথম অনুচ্ছেদে কিওয়ার্ডটি নেই। পাঠক ও সার্চ ইঞ্জিন দুজনেই শুরুটা আগে পড়ে।');
+                ? self::check(self::GOOD, 2, 'Keyphrase in the opening', 'The keyphrase appears in the opening of the story.')
+                : self::check(self::IMPROVEMENT, 2, 'Keyphrase in the opening',
+                    'The first paragraph does not contain the keyphrase. Readers and search engines both read the opening first.');
 
             $checks[] = self::has($metaDesc, $phrase)
-                ? self::check(self::GOOD, 2, 'মেটা বর্ণনায় কিওয়ার্ড', 'মেটা বর্ণনায় কিওয়ার্ডটি আছে।')
-                : self::check(self::IMPROVEMENT, 2, 'মেটা বর্ণনায় কিওয়ার্ড',
-                    'মেটা বর্ণনায় কিওয়ার্ডটি নেই। Google সার্চ ফলাফলে মিলে যাওয়া শব্দ মোটা করে দেখায়।');
+                ? self::check(self::GOOD, 2, 'Keyphrase in the meta description', 'The meta description contains the keyphrase.')
+                : self::check(self::IMPROVEMENT, 2, 'Keyphrase in the meta description',
+                    'The meta description does not contain the keyphrase. Google puts matching words in bold in the results.');
 
             $checks[] = self::has(rawurldecode($slug), $phrase)
-                ? self::check(self::GOOD, 1, 'ঠিকানায় কিওয়ার্ড', 'ওয়েব ঠিকানায় কিওয়ার্ডটি আছে।')
-                : self::check(self::IMPROVEMENT, 1, 'ঠিকানায় কিওয়ার্ড',
-                    'ওয়েব ঠিকানায় কিওয়ার্ডটি নেই।');
+                ? self::check(self::GOOD, 1, 'Keyphrase in the web address', 'The slug contains the keyphrase.')
+                : self::check(self::IMPROVEMENT, 1, 'Keyphrase in the web address',
+                    'The slug does not contain the keyphrase.');
         }
 
         // ---- length -------------------------------------------------------
 
         if ($words === 0) {
-            $checks[] = self::check(self::PROBLEM, 3, 'লেখার দৈর্ঘ্য', 'এখনো কোনো লেখা নেই।');
+            $checks[] = self::check(self::PROBLEM, 3, 'Text length', 'There is no text yet.');
         } elseif ($words >= 300) {
-            $checks[] = self::check(self::GOOD, 3, 'লেখার দৈর্ঘ্য',
-                Bangla::digits((string) $words).' শব্দ — যথেষ্ট।');
+            $checks[] = self::check(self::GOOD, 3, 'Text length',
+                $words.' words — enough.');
         } elseif ($words >= 150) {
-            $checks[] = self::check(self::IMPROVEMENT, 3, 'লেখার দৈর্ঘ্য',
-                Bangla::digits((string) $words).' শব্দ। সংবাদ হিসেবে চলে, তবে ৩০০ শব্দের বেশি হলে সার্চে ভালো করে।');
+            $checks[] = self::check(self::IMPROVEMENT, 3, 'Text length',
+                $words.' words. Fine for a news report, but over 300 does better in search.');
         } else {
-            $checks[] = self::check(self::PROBLEM, 3, 'লেখার দৈর্ঘ্য',
-                'মাত্র '.Bangla::digits((string) $words).' শব্দ। এত ছোট লেখা সার্চে প্রায় আসে না।');
+            $checks[] = self::check(self::PROBLEM, 3, 'Text length',
+                'Only '.$words.' words. A piece this short rarely surfaces in search at all.');
         }
 
         // ---- meta description ---------------------------------------------
@@ -94,17 +94,17 @@ class SeoAnalyzer
         $descLen = mb_strlen($metaDesc);
 
         if ($descLen === 0) {
-            $checks[] = self::check(self::PROBLEM, 3, 'মেটা বর্ণনা',
-                'মেটা বর্ণনা লেখা হয়নি। না লিখলে Google নিজেই লেখা থেকে যেকোনো অংশ তুলে নেবে।');
+            $checks[] = self::check(self::PROBLEM, 3, 'Meta description',
+                'No meta description. Without one Google picks whatever text it likes from the story.');
         } elseif ($descLen < 120) {
-            $checks[] = self::check(self::IMPROVEMENT, 3, 'মেটা বর্ণনা',
-                Bangla::digits((string) $descLen).' অক্ষর — ছোট। ১২০–১৫৬ অক্ষরে জায়গাটা কাজে লাগান।');
+            $checks[] = self::check(self::IMPROVEMENT, 3, 'Meta description',
+                $descLen.' characters — short. Use the space: 120–156 is the sweet spot.');
         } elseif ($descLen > 156) {
-            $checks[] = self::check(self::IMPROVEMENT, 3, 'মেটা বর্ণনা',
-                Bangla::digits((string) $descLen).' অক্ষর — বড়। Google শেষটা কেটে দেবে।');
+            $checks[] = self::check(self::IMPROVEMENT, 3, 'Meta description',
+                $descLen.' characters — long. Google will cut the end off.');
         } else {
-            $checks[] = self::check(self::GOOD, 3, 'মেটা বর্ণনা',
-                Bangla::digits((string) $descLen).' অক্ষর — ঠিক আছে।');
+            $checks[] = self::check(self::GOOD, 3, 'Meta description',
+                $descLen.' characters — good.');
         }
 
         // ---- title length ---------------------------------------------------
@@ -112,16 +112,16 @@ class SeoAnalyzer
         $titleLen = mb_strlen($metaTitle);
 
         if ($titleLen === 0) {
-            $checks[] = self::check(self::PROBLEM, 2, 'শিরোনামের দৈর্ঘ্য', 'শিরোনাম নেই।');
+            $checks[] = self::check(self::PROBLEM, 2, 'Title length', 'There is no title.');
         } elseif ($titleLen < 30) {
-            $checks[] = self::check(self::IMPROVEMENT, 2, 'শিরোনামের দৈর্ঘ্য',
-                Bangla::digits((string) $titleLen).' অক্ষর — ছোট। আরও কিছু যোগ করার জায়গা আছে।');
+            $checks[] = self::check(self::IMPROVEMENT, 2, 'Title length',
+                $titleLen.' characters — short. There is room to say more.');
         } elseif ($titleLen > 60) {
-            $checks[] = self::check(self::IMPROVEMENT, 2, 'শিরোনামের দৈর্ঘ্য',
-                Bangla::digits((string) $titleLen).' অক্ষর — সার্চ ফলাফলে কেটে যাবে।');
+            $checks[] = self::check(self::IMPROVEMENT, 2, 'Title length',
+                $titleLen.' characters — it will be cut off in the results.');
         } else {
-            $checks[] = self::check(self::GOOD, 2, 'শিরোনামের দৈর্ঘ্য',
-                Bangla::digits((string) $titleLen).' অক্ষর — ঠিক আছে।');
+            $checks[] = self::check(self::GOOD, 2, 'Title length',
+                $titleLen.' characters — good.');
         }
 
         // ---- links ----------------------------------------------------------
@@ -129,16 +129,16 @@ class SeoAnalyzer
         [$internal, $outbound] = self::countLinks($body);
 
         $checks[] = $internal > 0
-            ? self::check(self::GOOD, 2, 'ভেতরের লিংক',
-                Bangla::digits((string) $internal).'টি লিংক নিজের সাইটের দিকে।')
-            : self::check(self::IMPROVEMENT, 2, 'ভেতরের লিংক',
-                'নিজের সাইটের কোনো খবরের লিংক নেই। সম্পর্কিত খবরে লিংক দিলে পাঠক সাইটেই থাকে।');
+            ? self::check(self::GOOD, 2, 'Internal links',
+                $internal.' link(s) to your own pages.')
+            : self::check(self::IMPROVEMENT, 2, 'Internal links',
+                'No links to your own stories. Linking to related news keeps readers on the site.');
 
         $checks[] = $outbound > 0
-            ? self::check(self::GOOD, 1, 'বাইরের লিংক',
-                Bangla::digits((string) $outbound).'টি লিংক বাইরের উৎসের দিকে।')
-            : self::check(self::IMPROVEMENT, 1, 'বাইরের লিংক',
-                'কোনো বাইরের উৎসের লিংক নেই। তথ্যের উৎস দিলে খবরটি বিশ্বাসযোগ্য হয়।');
+            ? self::check(self::GOOD, 1, 'Outbound links',
+                $outbound.' link(s) to outside sources.')
+            : self::check(self::IMPROVEMENT, 1, 'Outbound links',
+                'No outbound links. Citing a source makes the report more credible.');
 
         // ---- images -----------------------------------------------------------
 
@@ -152,13 +152,13 @@ class SeoAnalyzer
         }
 
         if ($images === []) {
-            $checks[] = self::check(self::IMPROVEMENT, 1, 'লেখার ভেতরের ছবি',
-                'লেখার ভেতরে কোনো ছবি নেই। (ফিচার ছবি আলাদা — সেটি এই হিসাবের বাইরে।)');
+            $checks[] = self::check(self::IMPROVEMENT, 1, 'Images in the body',
+                'No images inside the story. (The featured image is separate and not counted here.)');
         } elseif ($noAlt > 0) {
-            $checks[] = self::check(self::PROBLEM, 1, 'ছবির alt লেখা',
-                Bangla::digits((string) $noAlt).'টি ছবিতে alt লেখা নেই। alt ছাড়া ছবি Google-ও বোঝে না, পর্দা-পাঠকও না।');
+            $checks[] = self::check(self::PROBLEM, 1, 'Image alt text',
+                $noAlt.' image(s) have no alt text. Without it neither Google nor a screen reader knows what the picture shows.');
         } else {
-            $checks[] = self::check(self::GOOD, 1, 'ছবির alt লেখা', 'সব ছবিতে alt লেখা আছে।');
+            $checks[] = self::check(self::GOOD, 1, 'Image alt text', 'Every image has alt text.');
         }
 
         // ---- score ------------------------------------------------------------

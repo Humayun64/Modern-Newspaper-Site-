@@ -3,18 +3,18 @@
 
     $score = $report['score'];
 
-    // Three bands, and the wording matters: a writer who sees "খারাপ" on a
+    // Three bands, and the wording matters: a writer who sees "poor" on a
     // perfectly good news brief stops reading the panel altogether.
     [$bandLabel, $bandColour] = match (true) {
-        $score >= 80 => ['ভালো', '#16a34a'],
-        $score >= 50 => ['মোটামুটি', '#d97706'],
-        default      => ['দুর্বল', '#dc2626'],
+        $score >= 80 => ['Good', '#16a34a'],
+        $score >= 50 => ['Needs work', '#d97706'],
+        default      => ['Poor', '#dc2626'],
     };
 
     $groups = [
-        SeoAnalyzer::PROBLEM     => ['সমস্যা', '#dc2626'],
-        SeoAnalyzer::IMPROVEMENT => ['আরও ভালো করা যায়', '#d97706'],
-        SeoAnalyzer::GOOD        => ['ঠিক আছে', '#16a34a'],
+        SeoAnalyzer::PROBLEM     => ['Problems', '#dc2626'],
+        SeoAnalyzer::IMPROVEMENT => ['Improvements', '#d97706'],
+        SeoAnalyzer::GOOD        => ['Good', '#16a34a'],
     ];
 @endphp
 
@@ -48,7 +48,7 @@
             <i style="width: {{ $score }}%; background: {{ $bandColour }}"></i>
         </div>
 
-        <div class="seo-words">{{ \App\Support\Bangla::digits((string) $report['words']) }} শব্দ</div>
+        <div class="seo-words">{{ $report['words'] }} words</div>
     </div>
 
     @foreach ($groups as $status => [$groupLabel, $groupColour])
@@ -57,7 +57,7 @@
         @if ($items !== [])
             <div class="seo-group">
                 <div class="seo-group-head" style="color: {{ $groupColour }}">
-                    {{ $groupLabel }} ({{ \App\Support\Bangla::digits((string) count($items)) }})
+                    {{ $groupLabel }} ({{ count($items) }})
                 </div>
 
                 @foreach ($items as $item)
