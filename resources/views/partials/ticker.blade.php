@@ -1,35 +1,33 @@
 @php
     /*
-     * Correction 13: a breaking headline stops being breaking after a day.
+     * The breaking strip at the top of the homepage.
      *
-     * The day runs from the moment an article was MARKED breaking, not from
-     * when it was published — every article here was imported weeks ago, so
-     * measuring from publish time would mean nothing could ever be breaking.
+     * It is simply THE FOUR NEWEST PUBLISHED ARTICLES. Always on, nothing
+     * to tick, nothing that expires. Publish a new article and it enters at
+     * the front; the oldest of the four drops out on its own.
      *
-     * The limit is applied HERE as well as by site:expire-breaking, on
-     * purpose. The scheduled command keeps the admin list tidy, but a missed
-     * cron run would otherwise leave yesterday's headline scrolling across
-     * the top of the site. This query is what readers see, so it enforces
-     * the rule itself and does not depend on the cron.
+     * The "Breaking news" tick on the post screen no longer decides what
+     * appears here. It used to, together with a 24-hour window, and the
+     * result was a strip that vanished for a fortnight because nobody
+     * ticked anything. A strip the client has to feed by hand is a strip
+     * that is empty most of the time.
      *
-     * Cache plain arrays, never Eloquent models. The database cache store
-     * serialises whatever it is given; a serialised model can come back as
-     * an incomplete object with no methods on it.
+     * How many it shows: the setting breaking_count, four by default.
+     *
+     * Cached for a minute, as plain arrays — never Eloquent models. The
+     * database cache store serialises what it is handed, and a serialised
+     * model comes back as an incomplete object with no methods on it. One
+     * minute also means a newly published article reaches the strip almost
+     * at once, which is the point of it.
      */
-    $breakingHours = (int) (\App\Models\Setting::all_cached()['breaking_hours'] ?? 24) ?: 24;
+    $count = (int) (\App\Models\Setting::all_cached()['breaking_count'] ?? 4) ?: 4;
 
-    $breaking = \Illuminate\Support\Facades\Cache::remember(
-        'ticker.breaking.'.$breakingHours,
+    $items = \Illuminate\Support\Facades\Cache::remember(
+        'ticker.latest.'.$count,
         60,
         fn () => \App\Models\Post::published()
-            ->where('is_breaking', true)
-            ->stillBreaking($breakingHours)
-            ->orderByDesc('breaking_since')
             ->latestFirst()
-            // Correction 2: no more than four at a time. The strip scrolls,
-            // so a long list means a reader waits to see the fourth one come
-            // round again — four is what they can actually follow.
-            ->limit(4)
+            ->limit($count)
             ->get(['id', 'title', 'slug', 'featured_image'])
             ->map(fn ($p) => [
                 'title' => $p->title,
@@ -40,7 +38,7 @@
     );
 @endphp
 
-@if (! empty($breaking))
+@if (! empty($items))
     <div class="wrap">
         <div class="ticker">
             <div class="ticker-label">ব্রেকিং</div>
@@ -50,7 +48,7 @@
             <div class="ticker-viewport">
                 <div class="ticker-track">
                     @foreach ([false, true] as $isClone)
-                        @foreach ($breaking as $item)
+                        @foreach ($items as $item)
                             <a class="ticker-item" href="{{ $item['url'] }}"
                                @if($isClone) aria-hidden="true" tabindex="-1" @endif>
                                 <img src="{{ $item['thumb'] }}" alt="" loading="lazy">

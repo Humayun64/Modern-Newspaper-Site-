@@ -1,94 +1,70 @@
-# Demo videos
+# Breaking strip — always the four newest articles
 
-One new command. Nothing else changes — no migration, no CSS, no views.
+One file: `resources/views/partials/ticker.blade.php`.
+No migration, no CSS, no settings row.
 
-It puts three sample articles in a **ভিডিও** category so "সর্বশেষ ভিডিও"
-is not an empty page when the client opens it. Each one demonstrates a
-different way of giving a video:
+**This replaces batch 20. If you have not installed batch 20, skip it.**
 
-1. an ordinary YouTube link
-2. a YouTube Shorts link
-3. a video file played by the site itself
+---
+
+## The rule now
+
+The strip shows the **four newest published articles**. Always.
+
+- Nothing to tick.
+- Nothing expires.
+- Publish a new article and it goes to the front; the oldest of the four
+  drops out by itself.
+
+The 24-hour window is gone, and so is the "Breaking news" tick deciding
+what shows here. That tick still exists on the post screen but no longer
+affects the strip.
+
+To show a different number, set `breaking_count` in settings.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch19\amardesh24-batch19\*" "%USERPROFILE%\amardesh24\" /E /H /Y
-```
-```
-php artisan site:demo-videos --dry-run
-```
-```
-php artisan site:demo-videos
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch21\amardesh24-batch21\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Then open `/video` and check all three play.
+Open the homepage — the strip should be there with the four newest
+headlines.
 
-## On the live server
+## Then live
 
 ```
-git pull
-```
-```
-php artisan optimize:clear
-```
-```
-php artisan site:demo-videos
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Breaking strip: four newest articles" && git push
 ```
 
-No `migrate` this time.
+On the server:
+
+```
+cd ~/apps/amardesh24 && git pull && php artisan optimize:clear
+```
 
 ---
 
-## Removing them
+## Tidying up
 
-When the client has real videos:
+The four posts flagged breaking on 3 November still carry the flag in the
+admin list. They do nothing now, but if you want them cleared:
 
 ```
-php artisan site:demo-videos --remove
+php artisan site:expire-breaking
 ```
-
-It finds them by slug (`demo-video-1`, `-2`, `-3`), which nothing else on
-the site uses — so it cannot reach a real article, even if the titles were
-edited. The ভিডিও category stays.
 
 ---
 
-## If one of them plays nothing
+## Still open
 
-The first two point at a video on someone else's YouTube channel, and that
-can be taken down at any time — I could not reach YouTube from here to
-check them. Two ways to fix it:
+The live site serves a `robots.txt` that blocks search engines, so Google
+is not indexing it. Check with:
 
-- open the article in the admin and paste a different link, or
-- `php artisan site:demo-videos --remove` then
-  `php artisan site:demo-videos --youtube="https://www.youtube.com/watch?v=…"`
+```
+grep -E 'APP_ENV|APP_DEBUG|APP_URL|APP_INDEXABLE' ~/apps/amardesh24/.env
+```
 
-`--shorts=` and `--mp4=` work the same way.
-
----
-
-## What the client needs to know
-
-On the Post screen, right-hand side, **Featured image and video**:
-
-- **Video link** — YouTube, Shorts, youtu.be, Facebook, fb.watch, Vimeo.
-  The site turns it into a player inside the article.
-- **Or upload a video** — MP4/WebM, up to 50 MB.
-
-Give one or the other. If both are given, the uploaded file wins.
-
-The link is almost always the better choice: YouTube and Facebook carry the
-bandwidth and adapt the quality to the reader's connection. An uploaded file
-is sent in full by this host to every reader, which is slow on a phone and
-fills the disk.
-
-A story reaches **সর্বশেষ ভিডিও** if any one of these is true: its Type is
-Video, it has a video link or file, or it is in the ভিডিও or পডকাস্ট
-category.
-
-**Worth checking:** the 50 MB limit is the form's. The server's own
-`upload_max_filesize` / `post_max_size` may be lower, and then a large
-upload fails with no message. hPanel → PHP Configuration.
+Send me the output and I will give you the exact line to change.
