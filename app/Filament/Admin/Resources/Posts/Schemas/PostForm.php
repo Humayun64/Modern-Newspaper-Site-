@@ -3,8 +3,10 @@
 namespace App\Filament\Admin\Resources\Posts\Schemas;
 
 use App\Support\BanglaSlug;
+use App\Support\SeoAnalyzer;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +16,7 @@ use Filament\Forms\Set;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class PostForm
 {
@@ -46,6 +49,7 @@ class PostForm
                                     ->helperText('Generated from the title. Edit if needed.')
                                     ->maxLength(191)
                                     ->unique(ignoreRecord: true)
+                                    ->live(onBlur: true)
                                     ->columnSpanFull(),
 
                                 RichEditor::make('body')
@@ -56,29 +60,69 @@ class PostForm
                                         'bulletList', 'orderedList',
                                         'link', 'undo', 'redo',
                                     ])
+                                    // Feeds the SEO panel: word count, links, images.
+                                    ->live(onBlur: true)
                                     ->columnSpanFull(),
 
                                 Textarea::make('excerpt')
                                     ->helperText('Leave empty to generate automatically from the content.')
                                     ->rows(3)
+                                    ->live(onBlur: true)
                                     ->columnSpanFull(),
                             ]),
 
+                        /*
+                         * SEO.
+                         *
+                         * Open by default rather than collapsed: a panel
+                         * nobody opens scores nothing. It recalculates when
+                         * a field loses focus — not on every keystroke,
+                         * which would send a request per letter typed and
+                         * make the editor feel heavy on a slow connection.
+                         */
                         Section::make('SEO')
                             ->description('How this article appears in search results')
-                            ->collapsed()
+                            ->collapsible()
                             ->schema([
+                                TextInput::make('focus_keyphrase')
+                                    ->label('Focus keyphrase')
+                                    ->maxLength(191)
+                                    ->live(onBlur: true)
+                                    ->helperText('The words a reader would type into Google to find this story. Not shown to readers.')
+                                    ->columnSpanFull(),
+
                                 TextInput::make('meta_title')
                                     ->label('Meta title')
                                     ->maxLength(60)
-                                    ->helperText('Keep under 60 characters')
+                                    ->live(onBlur: true)
+                                    ->helperText('Leave empty to use the headline. Keep under 60 characters.')
                                     ->columnSpanFull(),
 
                                 Textarea::make('meta_description')
                                     ->label('Meta description')
                                     ->maxLength(160)
                                     ->rows(2)
-                                    ->helperText('Keep under 160 characters')
+                                    ->live(onBlur: true)
+                                    ->helperText('120–156 characters.')
+                                    ->columnSpanFull(),
+
+                                Placeholder::make('seo_analysis')
+                                    ->label('SEO analysis')
+                                    ->content(function ($get) {
+                                        $report = SeoAnalyzer::analyze([
+                                            'title'            => (string) $get('title'),
+                                            'body'             => (string) $get('body'),
+                                            'slug'             => (string) $get('slug'),
+                                            'excerpt'          => (string) $get('excerpt'),
+                                            'meta_title'       => (string) $get('meta_title'),
+                                            'meta_description' => (string) $get('meta_description'),
+                                            'focus_keyphrase'  => (string) $get('focus_keyphrase'),
+                                        ]);
+
+                                        return new HtmlString(
+                                            view('filament.seo-analysis', ['report' => $report])->render()
+                                        );
+                                    })
                                     ->columnSpanFull(),
                             ]),
                     ]),
@@ -215,7 +259,9 @@ class PostForm
 
                         Section::make('Homepage placement')
                             ->schema([
-                                Toggle::make('is_breaking')->label('Breaking news'),
+                                Toggle::make('is_breaking')
+                                    ->label('Breaking news')
+                                    ->helperText('Puts this story in the red strip. Admin → Breaking news manages them all together.'),
                                 Toggle::make('is_featured')->label('Main slider'),
                                 Toggle::make('is_editors_pick')->label("Editor's pick"),
                                 Toggle::make('is_trending')->label('Trending')->live(),
