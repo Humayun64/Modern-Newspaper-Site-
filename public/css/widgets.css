@@ -1143,3 +1143,31 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
 @media (max-width: 620px) {
     .ticker-track { gap: 30px; }
 }
+
+/* --------------------------------------------------------------------------
+   PHONES — a white page, and the picture on the right
+   --------------------------------------------------------------------------
+   1. The grey wash behind the blocks goes. On a wide screen it separates
+      columns; on a phone there are no columns, so it is just a grey frame
+      around everything. The blocks keep their hairline border, which is now
+      the only thing marking where one section ends and the next begins.
+
+   2. Picture right, headline left, in the horizontal lists. The headline is
+      what a reader scans, so it starts at the edge their eye returns to.
+      The trending number moves across with the picture it belongs to.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+    body { background: #fff; }
+
+    .row-card,
+    .rank-card { grid-template-columns: minmax(0, 1fr) 104px; }
+
+    .row-card > .thumb,
+    .rank-card > .thumb { grid-column: 2; grid-row: 1; }
+
+    .row-card > div,
+    .rank-card > div { grid-column: 1; grid-row: 1; }
+
+    .rank-num { left: auto; right: 0; }
+}

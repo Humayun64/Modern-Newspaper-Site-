@@ -1,40 +1,78 @@
-# Ticker: plain space, no rule
-
-One file:
+# White phone background, pictures on the right, and a Breaking news screen
 
 ```
-public/css/widgets.css   (replaced)
+public/css/widgets.css                                   (replaced)
+resources/views/partials/ticker.blade.php                (replaced)
+app/Filament/Admin/Pages/BreakingNewsPage.php            (new)
+resources/views/filament/admin/pages/breaking-news.blade.php (new)
 ```
 
-Replaces batches 30 and 31 — the dividing rule is gone entirely.
+No migration — `is_breaking` already exists on the posts table.
+Install batch 32 first.
 
 ---
 
-## What changed
+## 1. White background on phones
 
-No line. The space between items went from 34px to **52px**, so a headline
-ends well clear of the next picture. On a phone it is 30px, where the strip
-is narrow and 52px would waste it.
+The grey wash behind the blocks is gone below 620px. On a wide screen that
+grey separates the columns; on a phone there are no columns, so it was only
+a grey frame around everything.
 
-Done on the track's own `gap` rather than padding on each item — one number
-to change, and nothing that can be overridden by another rule.
+The blocks keep their hairline border — that is now the only thing marking
+where one section ends and the next begins, so it has to stay.
+
+Desktop is untouched.
+
+## 2. Picture right, headline left — phones
+
+In the horizontal lists (সর্বশেষ, ট্রেন্ডিং, the list under প্রধান সংবাদ)
+the picture moves to the right and the headline starts at the left edge.
+The headline is what a reader scans, so it begins where the eye returns.
+
+The trending number moves across with the picture it belongs to, or it
+would sit on top of the text.
+
+## 3. Breaking news — a screen of its own
+
+**Admin → Breaking news.** Two lists: what is in the strip now, and
+everything else with an **Add** button. Search for older headlines. **Clear
+all** empties it.
+
+The tick on the article screen does the same thing — **Homepage placement →
+Breaking news** — so a reporter can mark a story while writing it.
+
+**How the strip decides what to show:**
+
+1. if anything is ticked, those stories — newest first, up to `breaking_count` (4)
+2. if nothing is ticked, the newest published articles
+
+The fallback is deliberate: an editor who marks nothing still gets a strip,
+and an empty strip at the top of a news homepage reads as a broken site.
+The two never mix — one tick and the ticks take over completely, because a
+reader cannot tell which list a headline came from and an editor would not
+expect their choice to share the row with whatever happened to be newest.
+
+The screen warns you if more stories are ticked than the strip can show,
+and marks any ticked story that is not published — readers never see those.
+
+The strip is cached for a minute, but the admin screen clears that cache
+the moment you tick something, so the change shows at once.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch32\amardesh24-batch32\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch33\amardesh24-batch33\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Ctrl+F5. If the spacing still looks unchanged, open the page with Ctrl+F5
-held or check in a private window — that would mean the browser is serving
-the old stylesheet, not that the file is wrong.
+Then open the admin and check **Breaking news** is in the menu. Ctrl+F5 on
+the site.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Ticker spacing" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "White phone background, pictures right, breaking news screen" && git push
 ```
 
 ```
