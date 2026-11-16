@@ -31,6 +31,22 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Red,
             ])
             ->sidebarCollapsibleOnDesktop()
+
+            /*
+             * A few CSS tweaks to Filament's own chrome, injected at the end
+             * of <head> so they land after the panel's stylesheet.
+             *
+             * A render hook rather than a compiled custom theme on purpose:
+             * a theme means a Vite build step, and every future deploy would
+             * then need `npm run build` before the admin looked right. This
+             * is a handful of overrides — it does not deserve a build.
+             *
+             * The hook is named by its string, not the PanelsRenderHook
+             * constant, because that class has moved between Filament major
+             * versions and the string has not.
+             */
+            ->renderHook('panels::head.end', fn () => view('filament.admin-tweaks'))
+
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
             ->pages([
