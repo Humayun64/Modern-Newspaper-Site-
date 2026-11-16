@@ -1,65 +1,43 @@
-# Three small ones
+# Ticker: one headline no longer touches the next
+
+One file:
 
 ```
-public/css/widgets.css                        (replaced)
-resources/views/home.blade.php                (replaced)
-app/Console/Commands/ApplyCorrections.php     (replaced)
+public/css/widgets.css   (replaced)
 ```
 
-No migration. Install batch 28 first.
+Install batch 29 first.
 
 ---
 
-## 1. The white space at the top of each block — phones only
+## What changed
 
-16px of padding above every heading became 4px, and the gap under the
-heading 16px → 12px.
+The items were already 34px apart — which sounds like plenty until you
+notice that every item *begins* with a photograph. The eye reads
+picture-and-text as one unit, so a sentence ending 34px before the next
+picture looks stuck to it.
 
-Not zero: at zero the heading's own line sits on the block's border and it
-reads as broken rather than tight. Say the word and I will take the last
-4px off.
-
-Left as it was on desktop, where the white space is doing real work
-separating the columns — the crosses were on phone screenshots. Tell me if
-you want it there too.
-
-## 2. ট্রেন্ডিং moves to the top of the sidebar
-
-Above পরিচালকের পরিচিতি, and above the stock, weather and prayer widgets
-as well. It is the only block in that column that changes with the news and
-the one most likely to be clicked, so it belongs above the fold.
-
-If you wanted it only above পরিচালকের পরিচিতি and still below the weather,
-say so — it is one line.
-
-## 3. The founder's line
-
-"প্রতিষ্ঠাতা ও সম্পাদক, আমারদেশ২৪.নিউজ" → **"প্রতিষ্ঠাতা"**.
-
-This one is stored in the database, so copying the file is not enough — the
-command below writes it.
+Widening the gap alone would have eaten the strip, so a hairline now does
+the separating: 24px of padding each side of an item and a 1px rule between
+them. Text to the next picture is 48px, with the rule in the middle. On a
+phone the padding drops to 15px.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch29\amardesh24-batch29\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear && php artisan site:apply-corrections --force
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch30\amardesh24-batch30\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Ctrl+F5 afterwards.
-
-`--force` is needed: without it the command leaves a setting that is
-already filled alone, and this one is. It also re-applies the other settled
-corrections (section order, the header ad off, the banner colour) — all
-unchanged, so nothing moves.
+Ctrl+F5.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Block padding on phones, trending to the top, founder line" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Ticker separators" && git push
 ```
 
 ```
-cd ~/apps/amardesh24 && git pull && php artisan optimize:clear && php artisan site:apply-corrections --force
+cd ~/apps/amardesh24 && git pull && php artisan optimize:clear
 ```

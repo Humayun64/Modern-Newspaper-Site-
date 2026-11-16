@@ -1126,3 +1126,36 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
     .block { padding-top: 4px; }
     .block-head { margin-bottom: 12px; }
 }
+
+/* --------------------------------------------------------------------------
+   TICKER — telling one headline from the next
+
+   The items were 34px apart, which sounds like plenty until you notice that
+   every item BEGINS with a photograph. The eye reads picture-and-text as one
+   unit, so a sentence ending 34px before the next picture looks stuck to it.
+
+   Wider spacing alone would eat the strip. A hairline between items does the
+   separating instead, and costs almost nothing.
+   -------------------------------------------------------------------------- */
+
+.ticker-track { gap: 0; }
+
+.ticker-item {
+    position: relative;
+    padding: 0 24px;
+}
+
+.ticker-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 22px;
+    background: var(--rule);
+}
+
+@media (max-width: 620px) {
+    .ticker-item { padding: 0 15px; }
+}
