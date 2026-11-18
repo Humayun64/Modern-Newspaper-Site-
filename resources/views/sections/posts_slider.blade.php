@@ -1,15 +1,14 @@
 @php $sid = 'slider-'.uniqid(); @endphp
 
 <section class="block">
+    {{-- The arrows used to live up here beside the heading. They now sit on
+         the picture, where প্রধান সংবাদ keeps them and where a thumb already
+         is. The heading row is left with the title alone. --}}
     <div class="block-head">
         <h2 class="block-title">{{ $title ?: 'সংবাদ স্লাইডার' }}</h2>
-        <div class="slider-nav">
-            <button type="button" data-slider-prev="{{ $sid }}" aria-label="Previous">&lsaquo;</button>
-            <button type="button" data-slider-next="{{ $sid }}" aria-label="Next">&rsaquo;</button>
-        </div>
     </div>
 
-    <div class="slider">
+    <div class="slider ps-slider">
         <div class="slider-track" id="{{ $sid }}" tabindex="0" aria-label="স্লাইডার">
             @foreach ($posts as $post)
                 <article class="slide">
@@ -30,5 +29,15 @@
                 </article>
             @endforeach
         </div>
+
+        {{-- One slide is not a slider, so the arrows stay away. --}}
+        @if ($posts->count() > 1)
+            <div class="ps-nav">
+                <button type="button" class="ps-arrow"
+                        data-slider-prev="{{ $sid }}" aria-label="আগের খবর">&lsaquo;</button>
+                <button type="button" class="ps-arrow"
+                        data-slider-next="{{ $sid }}" aria-label="পরের খবর">&rsaquo;</button>
+            </div>
+        @endif
     </div>
 </section>

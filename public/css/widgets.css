@@ -1171,3 +1171,100 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
 
     .rank-num { left: auto; right: 0; }
 }
+
+/* --------------------------------------------------------------------------
+   THE WIDE CARDS — one column for the picture, one for everything else
+
+   The card is a grid of four loose children: picture, headline, an optional
+   summary, and the byline. With only the two columns declared they were
+   laid out in reading order, so the picture took the first cell, the
+   headline the second — and then the SUMMARY wrapped back under the
+   picture, into a 116px column. That is the thin ribbon of text in the
+   খেলাধুলা block.
+
+   Pinning the picture to its own column for the full height, and every
+   other child to the text column, puts the summary where it belongs and
+   costs nothing elsewhere.
+   -------------------------------------------------------------------------- */
+
+.stack .block .card > .thumb,
+.express .card > .thumb {
+    grid-column: 1;
+    grid-row: 1 / -1;
+}
+
+.stack .block .card > :not(.thumb),
+.express .card > :not(.thumb) {
+    grid-column: 2;
+}
+
+/* --------------------------------------------------------------------------
+   PHONES — the wide cards turn round too
+
+   row-card and rank-card already put the picture on the right. These are
+   the last list that did not, so the whole page now reads the same way:
+   headline at the left edge, picture at the right.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+    .stack .block .card,
+    .express .card { grid-template-columns: minmax(0, 1fr) 116px; }
+
+    .stack .block .card > .thumb,
+    .express .card > .thumb { grid-column: 2; }
+
+    .stack .block .card > :not(.thumb),
+    .express .card > :not(.thumb) { grid-column: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   সংবাদ স্লাইডার — arrows on the picture
+
+   Same idea as the প্রধান সংবাদ carousel: the overlay is given the picture's
+   own aspect ratio so the buttons land on the photograph and never on the
+   headline underneath it. This slider's picture is 16:7 on a wide screen
+   and 4:3 on a phone, so the overlay follows it.
+   -------------------------------------------------------------------------- */
+
+.ps-slider { position: relative; }
+
+/* The picture is pinned to one ratio so the overlay can be pinned to the
+   same one. Guessing it from the stylesheet below was how the arrows ended
+   up a little low on a phone. */
+.ps-slider .slide > .thumb { aspect-ratio: 16 / 9; }
+
+.ps-nav {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    pointer-events: none;
+}
+
+.ps-arrow {
+    pointer-events: auto;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(17, 17, 17, .55);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+.ps-arrow:hover,
+.ps-arrow:focus-visible { background: rgba(200, 16, 46, .92); }
+
+@media (max-width: 620px) {
+    .ps-nav { padding: 0 6px; }
+    .ps-arrow { width: 32px; height: 32px; font-size: 20px; }
+}

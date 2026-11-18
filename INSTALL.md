@@ -1,56 +1,56 @@
-# Admin sidebar — menu items moved left
+# Slider arrows on the picture, and the wide cards turned round
 
 ```
-app/Providers/Filament/AdminPanelProvider.php   (replaced)
-resources/views/filament/admin-tweaks.blade.php (new)
+public/css/widgets.css                          (replaced)
+resources/views/sections/posts_slider.blade.php (replaced)
 ```
 
-No migration. Install batch 35 first.
+No migration. Install batch 36 first.
 
 ---
 
-## What changed
+## 1. সংবাদ স্লাইডার — arrows on the photograph
 
-The sidebar's left gutter goes from Filament's 1.5rem to **0.55rem**, and
-each item's own padding and the icon-to-label gap come in with it. The
-brand line and any group headings move to the same left edge so the column
-still reads as one.
+They were beside the heading; they now sit on the picture, left and right,
+the same as প্রধান সংবাদ. The heading row is left with the title alone.
 
-Done with a render hook that drops a `<style>` block at the end of `<head>`
-— not a compiled Filament theme. A theme would mean a Vite build step, and
-every future deploy would then need `npm run build` before the admin looked
-right. This is a handful of cosmetic overrides; it does not deserve a build.
+The picture in this slider is pinned to 16:9 and the arrow overlay is given
+the same ratio, so the buttons land dead centre on the photograph at any
+width rather than drifting onto the headline below it. Checked at 1300px
+and 390px — exact on both.
 
-**To change the amount**, edit one line in `admin-tweaks.blade.php`:
+## 2. Phones: the last lists turn round
 
-```css
---admin-sidebar-gutter: .55rem;
-```
+The wide cards (জাতীয়, খেলাধুলা and the rest of the main column) now put
+the picture on the right and the headline at the left edge, matching
+সর্বশেষ and ট্রেন্ডিং. The whole page reads one way now.
 
-Smaller moves it further left; `1.5rem` puts it back to where it was.
+## 3. A bug found on the way — worth knowing about
 
-## If it does not move
+The wide card is a grid of four loose children: picture, headline, summary,
+byline. Only the two columns were declared, so they were placed in reading
+order — picture, headline, and then **the summary wrapped back under the
+picture, into a 116px column**. That is the thin ribbon of squeezed text in
+the খেলাধুলা block in your screenshot.
 
-Filament renames its internal classes between major versions, and these
-rules target those names. If nothing shifts, send me a screenshot with the
-browser's inspector open on a menu item (right-click → Inspect) and I will
-match the real class names. Nothing can break either way — a rule that
-matches nothing is ignored.
+The picture now holds its own column for the full height and everything
+else goes in the text column. Fixed on desktop as well, where it was doing
+the same thing with more room to hide it.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch36\amardesh24-batch36\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch37\amardesh24-batch37\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Then Ctrl+F5 in the admin.
+Ctrl+F5.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Admin sidebar spacing" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Slider arrows on the picture, wide cards flipped on phones" && git push
 ```
 
 ```
