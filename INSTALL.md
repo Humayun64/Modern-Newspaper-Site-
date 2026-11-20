@@ -1,4 +1,4 @@
-# Picture right, headline left — on the desktop too
+# One picture width down the main column
 
 One file:
 
@@ -6,45 +6,46 @@ One file:
 public/css/widgets.css   (replaced)
 ```
 
-No migration. Install batch 37 first.
+No migration. Install batch 38 first.
 
 ---
 
 ## What changed
 
-The desktop now reads the same way as the phone: the headline starts at the
-left edge and the picture sits on the right, in সর্বশেষ, ট্রেন্ডিং, জাতীয়,
-খেলাধুলা and every other horizontal list. The ranking number in ট্রেন্ডিং
-travels across with the picture it belongs to.
+A block in the main column mixes two card shapes — the lead card at the top
+and the smaller rows under it. Their pictures were 170px and 104px, so the
+right-hand edge stepped in and out down the page and the block read as two
+lists stacked rather than one.
 
-Checked at 390, 620, 880, 1040, 1300 and 1440px — picture on the right at
-every one, and no sideways scroll anywhere.
+The rows now take the lead card's width, and its 4:3 shape with it. The
+shape matters: square 170px pictures would have made every row as tall as
+its photograph, with a short headline floating in all that space. At 4:3
+the row stays close to the height of its own text.
 
-Untouched: the lead card and the carousels, where the headline already sits
-under the photograph, and the upright cards on category and search pages.
+Picture widths now, in the main column: **170px**, dropping to **116px**
+below 880px — the same numbers the lead card already used, so they move
+together from here on.
 
-## How it is written
+**The sidebar is deliberately left alone** at 104px. That column is 330px
+wide; a 170px picture there would leave the headline nowhere to go.
 
-All the rules that decide which side the picture is on now sit in **one
-block at the end of the file**, including restatements of the phone rules
-from the earlier rounds. Before this there were three places that could
-each flip a list, and they had drifted apart. One place to change it means
-one place to look when it is wrong.
+Checked at 1300, 880 and 390px — same width and the same right edge on all
+three.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch38\amardesh24-batch38\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch39\amardesh24-batch39\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Ctrl+F5 — the stylesheet changed.
+Ctrl+F5.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Picture right on every width" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "One picture width in the main column" && git push
 ```
 
 ```

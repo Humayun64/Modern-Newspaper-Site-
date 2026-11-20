@@ -1288,3 +1288,28 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
     .stack .block .card,
     .express .card { grid-template-columns: minmax(0, 1fr) 116px; }
 }
+
+/* --------------------------------------------------------------------------
+   ONE PICTURE WIDTH DOWN THE MAIN COLUMN
+
+   A block in the main column mixes two card shapes: the lead card at the
+   top and the smaller rows under it. Their pictures were 170px and 104px,
+   so the right-hand edge stepped in and out down the page and the block
+   read as two lists stacked rather than one.
+
+   The rows now take the lead card's width and its 4:3 shape. Square 170px
+   thumbs would have made each row as tall as the picture; 4:3 keeps the row
+   close to the height of its own text.
+
+   Scoped to .stack, so the sidebar keeps its narrow 104px pictures — that
+   column is 330px wide and a 170px picture there would leave the headline
+   nowhere to go.
+   -------------------------------------------------------------------------- */
+
+.stack .block .row-card { grid-template-columns: minmax(0, 1fr) 170px; }
+
+.stack .block .row-card .thumb { aspect-ratio: 4 / 3; }
+
+@media (max-width: 880px) {
+    .stack .block .row-card { grid-template-columns: minmax(0, 1fr) 116px; }
+}
