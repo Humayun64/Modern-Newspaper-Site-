@@ -1179,12 +1179,10 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
    summary, and the byline. With only the two columns declared they were
    laid out in reading order, so the picture took the first cell, the
    headline the second — and then the SUMMARY wrapped back under the
-   picture, into a 116px column. That is the thin ribbon of text in the
-   খেলাধুলা block.
+   picture, into a narrow column.
 
    Pinning the picture to its own column for the full height, and every
-   other child to the text column, puts the summary where it belongs and
-   costs nothing elsewhere.
+   other child to the text column, puts the summary where it belongs.
    -------------------------------------------------------------------------- */
 
 .stack .block .card > .thumb,
@@ -1199,31 +1197,11 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
 }
 
 /* --------------------------------------------------------------------------
-   PHONES — the wide cards turn round too
-
-   row-card and rank-card already put the picture on the right. These are
-   the last list that did not, so the whole page now reads the same way:
-   headline at the left edge, picture at the right.
-   -------------------------------------------------------------------------- */
-
-@media (max-width: 620px) {
-    .stack .block .card,
-    .express .card { grid-template-columns: minmax(0, 1fr) 116px; }
-
-    .stack .block .card > .thumb,
-    .express .card > .thumb { grid-column: 2; }
-
-    .stack .block .card > :not(.thumb),
-    .express .card > :not(.thumb) { grid-column: 1; }
-}
-
-/* --------------------------------------------------------------------------
    সংবাদ স্লাইডার — arrows on the picture
 
    Same idea as the প্রধান সংবাদ carousel: the overlay is given the picture's
    own aspect ratio so the buttons land on the photograph and never on the
-   headline underneath it. This slider's picture is 16:7 on a wide screen
-   and 4:3 on a phone, so the overlay follows it.
+   headline underneath it.
    -------------------------------------------------------------------------- */
 
 .ps-slider { position: relative; }
@@ -1267,4 +1245,46 @@ button.gc-card:hover .gc-cover img { transform: scale(1.04); }
 @media (max-width: 620px) {
     .ps-nav { padding: 0 6px; }
     .ps-arrow { width: 32px; height: 32px; font-size: 20px; }
+}
+
+/* --------------------------------------------------------------------------
+   PICTURE RIGHT, HEADLINE LEFT — EVERY WIDTH
+   --------------------------------------------------------------------------
+   The phone has read this way for a while; the desktop now matches it, so
+   a reader moving between the two is not re-learning the page. The headline
+   starts at the left edge where the eye returns, and the pictures line up
+   down one right-hand rail instead of two.
+
+   This block sits at the end of the file on purpose. Every earlier rule for
+   these lists — including the ones inside the phone media queries above —
+   is restated here in the new direction, so there is exactly one place that
+   decides which side the picture is on.
+   -------------------------------------------------------------------------- */
+
+.row-card,
+.rank-card { grid-template-columns: minmax(0, 1fr) 104px; }
+
+.row-card > .thumb,
+.rank-card > .thumb { grid-column: 2; grid-row: 1; }
+
+.row-card > div,
+.rank-card > div { grid-column: 1; grid-row: 1; }
+
+/* The ranking number belongs to the picture, so it travels with it. */
+.rank-num { left: auto; right: 0; }
+
+.stack .block .card,
+.express .card { grid-template-columns: minmax(0, 1fr) 170px; }
+
+.stack .block .card > .thumb,
+.express .card > .thumb { grid-column: 2; grid-row: 1 / -1; }
+
+.stack .block .card > :not(.thumb),
+.express .card > :not(.thumb) { grid-column: 1; }
+
+/* The picture narrows as the column does — the headline needs the room
+   more than the photograph does. */
+@media (max-width: 880px) {
+    .stack .block .card,
+    .express .card { grid-template-columns: minmax(0, 1fr) 116px; }
 }

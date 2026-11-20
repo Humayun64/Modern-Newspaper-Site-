@@ -1,56 +1,50 @@
-# Slider arrows on the picture, and the wide cards turned round
+# Picture right, headline left — on the desktop too
+
+One file:
 
 ```
-public/css/widgets.css                          (replaced)
-resources/views/sections/posts_slider.blade.php (replaced)
+public/css/widgets.css   (replaced)
 ```
 
-No migration. Install batch 36 first.
+No migration. Install batch 37 first.
 
 ---
 
-## 1. সংবাদ স্লাইডার — arrows on the photograph
+## What changed
 
-They were beside the heading; they now sit on the picture, left and right,
-the same as প্রধান সংবাদ. The heading row is left with the title alone.
+The desktop now reads the same way as the phone: the headline starts at the
+left edge and the picture sits on the right, in সর্বশেষ, ট্রেন্ডিং, জাতীয়,
+খেলাধুলা and every other horizontal list. The ranking number in ট্রেন্ডিং
+travels across with the picture it belongs to.
 
-The picture in this slider is pinned to 16:9 and the arrow overlay is given
-the same ratio, so the buttons land dead centre on the photograph at any
-width rather than drifting onto the headline below it. Checked at 1300px
-and 390px — exact on both.
+Checked at 390, 620, 880, 1040, 1300 and 1440px — picture on the right at
+every one, and no sideways scroll anywhere.
 
-## 2. Phones: the last lists turn round
+Untouched: the lead card and the carousels, where the headline already sits
+under the photograph, and the upright cards on category and search pages.
 
-The wide cards (জাতীয়, খেলাধুলা and the rest of the main column) now put
-the picture on the right and the headline at the left edge, matching
-সর্বশেষ and ট্রেন্ডিং. The whole page reads one way now.
+## How it is written
 
-## 3. A bug found on the way — worth knowing about
-
-The wide card is a grid of four loose children: picture, headline, summary,
-byline. Only the two columns were declared, so they were placed in reading
-order — picture, headline, and then **the summary wrapped back under the
-picture, into a 116px column**. That is the thin ribbon of squeezed text in
-the খেলাধুলা block in your screenshot.
-
-The picture now holds its own column for the full height and everything
-else goes in the text column. Fixed on desktop as well, where it was doing
-the same thing with more room to hide it.
+All the rules that decide which side the picture is on now sit in **one
+block at the end of the file**, including restatements of the phone rules
+from the earlier rounds. Before this there were three places that could
+each flip a list, and they had drifted apart. One place to change it means
+one place to look when it is wrong.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch37\amardesh24-batch37\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch38\amardesh24-batch38\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Ctrl+F5.
+Ctrl+F5 — the stylesheet changed.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Slider arrows on the picture, wide cards flipped on phones" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Picture right on every width" && git push
 ```
 
 ```
