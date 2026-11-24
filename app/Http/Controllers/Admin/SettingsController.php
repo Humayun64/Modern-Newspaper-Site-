@@ -31,6 +31,9 @@ class SettingsController extends Controller
         'ads' => [
             'show_header_ad',
         ],
+        'topbar' => [
+            'show_topbar', 'topbar_clock', 'topbar_social',
+        ],
         'appearance' => [
             'color_accent', 'color_accent_dk', 'color_header_bg', 'color_nav_bg',
         ],

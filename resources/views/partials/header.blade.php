@@ -35,6 +35,26 @@
     $ctaText = $settings['nav_cta_text'] ?? 'Latest Video';
     $ctaUrl  = ($settings['nav_cta_url'] ?? '') ?: route('video');
 
+    /*
+     * The strip above the masthead — the date, the running clock and the
+     * social icons.
+     *
+     * Three switches rather than one: the client asked to be able to take
+     * the bar away, and once it is switchable the two halves are worth
+     * switching separately — a newsroom may want the date without the
+     * social links, or the reverse.
+     *
+     * An absent setting means SHOWN. A new key arrives empty in the
+     * database, and a bar that disappeared by itself after an update would
+     * be read as a fault, not a default.
+     */
+    $showTopbar   = ($settings['show_topbar']   ?? '1') !== '0';
+    $topbarClock  = ($settings['topbar_clock']  ?? '1') !== '0';
+    $topbarSocial = ($settings['topbar_social'] ?? '1') !== '0';
+
+    // Nothing left in it is the same as switching it off.
+    $showTopbar = $showTopbar && ($topbarClock || $topbarSocial);
+
     $languages = [
         'bn' => 'বাংলা',
         'en' => 'English',
@@ -48,15 +68,33 @@
     <style>:root{@foreach ($theme as $var => $value){{ $var }}:{{ $value }};@endforeach}</style>
 @endif
 
-<div class="topbar">
-    <div class="wrap">
-        <span class="clock">
-            <span>{{ now()->format('F j, Y') }}</span>
-            <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
-        </span>
-        @include('partials.social-row')
+@if ($showTopbar)
+    <div class="topbar">
+        {{-- With the clock gone the icons would slide to the left, because
+             the row is a space-between. Pushing the single child to the end
+             keeps them where a reader expects them. --}}
+        <div class="wrap" @unless ($topbarClock) style="justify-content:flex-end" @endunless>
+            @if ($topbarClock)
+                <span class="clock">
+                    <span>{{ now()->format('F j, Y') }}</span>
+                    <span id="live-clock">{{ now()->format('h:i:s A') }}</span>
+                </span>
+            @endif
+
+            @if ($topbarSocial)
+                @include('partials.social-row')
+            @endif
+        </div>
     </div>
-</div>
+@endif
+
+@unless ($showTopbar && $topbarClock)
+    {{-- The ticking script in the layout looks for #live-clock every second.
+         Leaving an empty, hidden one behind costs nothing and means the
+         script cannot throw when the bar is switched off — a thrown error
+         there would take the rest of that script block down with it. --}}
+    <span id="live-clock" hidden></span>
+@endunless
 
 <header class="masthead">
     <div class="wrap">

@@ -1,51 +1,60 @@
-# One picture width down the main column
-
-One file:
+# Top bar on a switch
 
 ```
-public/css/widgets.css   (replaced)
+resources/views/partials/header.blade.php                    (replaced)
+resources/views/filament/admin/pages/manage-settings.blade.php (replaced)
+app/Http/Controllers/Admin/SettingsController.php            (replaced)
 ```
 
-No migration. Install batch 38 first.
+No migration — settings live in the existing `settings` table.
+All three were built from the copies you sent, so nothing earlier is lost.
 
 ---
 
-## What changed
+## What you get
 
-A block in the main column mixes two card shapes — the lead card at the top
-and the smaller rows under it. Their pictures were 170px and 104px, so the
-right-hand edge stepped in and out down the page and the block read as two
-lists stacked rather than one.
+**Site settings → Top bar**, a new section with three switches:
 
-The rows now take the lead card's width, and its 4:3 shape with it. The
-shape matters: square 170px pictures would have made every row as tall as
-its photograph, with a short headline floating in all that space. At 4:3
-the row stays close to the height of its own text.
+- **Show the top bar** — the master switch
+- **Date and clock**
+- **Social icons**
 
-Picture widths now, in the main column: **170px**, dropping to **116px**
-below 880px — the same numbers the lead card already used, so they move
-together from here on.
+Turning both halves off hides the bar too. An empty strip above the logo is
+worse than no strip.
 
-**The sidebar is deliberately left alone** at 104px. That column is 330px
-wide; a 170px picture there would leave the headline nowhere to go.
+With the clock off, the icons stay on the right rather than sliding across
+to where the date used to be.
 
-Checked at 1300, 880 and 390px — same width and the same right edge on all
-three.
+**Default is shown.** A new setting arrives empty in the database, and a bar
+that vanished by itself after an update would be read as a fault.
+
+## Two small things done on the way
+
+**A hidden `#live-clock` is left behind when the bar is off.** The layout's
+script looks for that element every second; an error thrown there would take
+the rest of that script block with it. An empty hidden span costs nothing
+and removes the risk.
+
+**"Top bar widgets" is now "Sidebar widgets".** Those are the weather,
+prayer times and stock index, and they render in the homepage sidebar, not
+the top bar — with a real "Top bar" section beside it the old name would
+have sent you to the wrong place. Nothing about them changed.
 
 ---
 
 ## Install on the PC
 
 ```
-xcopy "%USERPROFILE%\Downloads\amardesh24-batch39\amardesh24-batch39\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
+xcopy "%USERPROFILE%\Downloads\amardesh24-batch40\amardesh24-batch40\*" "%USERPROFILE%\amardesh24\" /E /H /Y && php artisan optimize:clear
 ```
 
-Ctrl+F5.
+Open **Site settings**, untick **Show the top bar**, save, and check the
+site. Then tick it back on.
 
 ## Then live
 
 ```
-cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "One picture width in the main column" && git push
+cd %USERPROFILE%\amardesh24 && git add -A && git commit -m "Top bar switches in site settings" && git push
 ```
 
 ```

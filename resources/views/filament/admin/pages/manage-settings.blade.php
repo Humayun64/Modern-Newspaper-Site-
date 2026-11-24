@@ -133,6 +133,47 @@
             </label>
         </x-filament::section>
 
+        {{-- ---------------- top bar ---------------- --}}
+        <x-filament::section>
+            <x-slot name="heading">Top bar</x-slot>
+            <x-slot name="description">
+                The thin strip above the logo, holding the date, the clock and the social icons.
+            </x-slot>
+
+            <div style="display:grid;gap:.9rem">
+                <label style="display:inline-flex;align-items:center;gap:8px;font-size:.875rem;font-weight:600">
+                    {{-- An unticked checkbox posts nothing at all, so this
+                         carries the "off" value and the checkbox overrides it. --}}
+                    <input type="hidden" name="show_topbar" value="0">
+                    <input type="checkbox" name="show_topbar" value="1"
+                           @checked(old('show_topbar', $settings['show_topbar'] ?? '1') !== '0')>
+                    Show the top bar
+                </label>
+
+                <div style="display:grid;gap:.6rem;padding-inline-start:1.5rem;border-inline-start:2px solid rgba(128,128,128,.25)">
+                    <label style="display:inline-flex;align-items:center;gap:8px;font-size:.875rem">
+                        <input type="hidden" name="topbar_clock" value="0">
+                        <input type="checkbox" name="topbar_clock" value="1"
+                               @checked(old('topbar_clock', $settings['topbar_clock'] ?? '1') !== '0')>
+                        Date and clock
+                    </label>
+
+                    <label style="display:inline-flex;align-items:center;gap:8px;font-size:.875rem">
+                        <input type="hidden" name="topbar_social" value="0">
+                        <input type="checkbox" name="topbar_social" value="1"
+                               @checked(old('topbar_social', $settings['topbar_social'] ?? '1') !== '0')>
+                        Social icons
+                    </label>
+
+                    <span style="font-size:.78rem;opacity:.65">
+                        Turning both of these off hides the bar as well — an empty strip is worse
+                        than no strip. Only the social links that have a URL under "Social links"
+                        are drawn.
+                    </span>
+                </div>
+            </div>
+        </x-filament::section>
+
         {{-- ---------------- editorial ---------------- --}}
         <x-filament::section>
             <x-slot name="heading">Editorial</x-slot>
@@ -195,9 +236,9 @@
 
         {{-- ---------------- top bar widgets ---------------- --}}
         <x-filament::section>
-            <x-slot name="heading">Top bar widgets</x-slot>
+            <x-slot name="heading">Sidebar widgets</x-slot>
             <x-slot name="description">
-                Weather and the stock index, shown at the top right of every page.
+                Weather, prayer times and the stock index, shown in the homepage sidebar.
             </x-slot>
 
             <div style="display:grid;gap:1rem">
